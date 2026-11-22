@@ -1,70 +1,85 @@
-import ContractMonitors.PastTime
+import ContractMonitors.Patterns
 
 /-!
 # Examples
 
-Contract patterns expressed in the past-time language, with executable
-checks (`#guard`) that the synthesised monitor agrees with the semantics on
-sample prefixes.
+The contract patterns instantiated for a toy perception stage, with
+executable checks (`#guard`) that the synthesised monitor gives the expected
+verdicts on sample prefixes.
 -/
 
 namespace ContractMonitors
 
-variable {σ : Type}
-
-namespace Fml
-
-/-- `impl φ ψ`: if `φ` then `ψ`. -/
-def impl (φ ψ : Fml σ) : Fml σ := .neg (.conj φ (.neg ψ))
-
-/-- `prevN k φ`: `φ` held exactly `k` ticks ago. -/
-def prevN : Nat → Fml σ → Fml σ
-  | 0, φ => φ
-  | k + 1, φ => .prev (prevN k φ)
-
-/-- **Response time.** Every request is answered within `k` ticks: if a
-request occurred exactly `k` ticks ago, a response occurred since then. -/
-def respondsWithin (k : Nat) (req resp : Fml σ) : Fml σ :=
-  impl (prevN k req) (.onceWithin k resp)
-
-/-- **Liveliness.** `φ` holds at least once in every window of `k + 1` ticks,
-checked once `k` ticks have elapsed. -/
-def aliveWithin (k : Nat) (φ : Fml σ) : Fml σ :=
-  impl (prevN k (.atom fun _ => true)) (.onceWithin k φ)
-
-end Fml
-
-/-- Observation of a toy component: a request flag and a response flag. -/
+/-- Observation of a perception stage in one tick. -/
 structure Obs where
-  req : Bool
-  resp : Bool
+  /-- An input (e.g. a point cloud) arrived. -/
+  inp : Bool := false
+  /-- An output (e.g. an object list) was published. -/
+  out : Bool := false
+  /-- Number of objects in the output. -/
+  count : Nat := 0
+  /-- Lowest confidence in the output, in percent. -/
+  conf : Nat := 100
 
-def idle : Obs := ⟨false, false⟩
-def request : Obs := ⟨true, false⟩
-def response : Obs := ⟨false, true⟩
+def idle : Obs := {}
+def input : Obs := { inp := true }
+def output (count : Nat := 1) (conf : Nat := 100) : Obs :=
+  { out := true, count := count, conf := conf }
 
-/-- Requests are answered within two ticks. -/
-def latency : Fml Obs :=
-  Fml.respondsWithin 2 (.atom Obs.req) (.atom Obs.resp)
+def verdict (φ : Fml Obs) (pre : List Obs) : Bool := (synthMonitor φ).verdict pre
 
--- Semantics.
-#guard latency.holds [request, idle, response]
-#guard latency.holds [request, idle, idle] == false
-#guard latency.holds [request, idle, idle, response]
-#guard latency.holds [idle, idle, idle, idle]
+/-- Response: inputs are answered within two ticks. -/
+def latency : Fml Obs := Fml.respondsWithin 2 (.atom (·.inp)) (.atom (·.out))
 
--- The synthesised monitor gives the same verdicts.
-#guard (synthMonitor latency).verdict [request, idle, response]
-#guard (synthMonitor latency).verdict [request, idle, idle] == false
-#guard (synthMonitor latency).verdict [request, idle, idle, response]
-#guard (synthMonitor latency).verdict [idle, idle, idle, idle]
+#guard verdict latency [input, idle, output]
+#guard verdict latency [input, idle, idle] == false
+#guard verdict latency [input, idle, idle, output]
+#guard verdict latency [idle, idle, idle, idle]
+#guard latency.holds [input, idle, idle] == false
 
-/-- A response at least every third tick. -/
-def alive : Fml Obs := Fml.aliveWithin 2 (.atom Obs.resp)
+/-- Liveliness: an output at least every third tick. -/
+def alive : Fml Obs := Fml.aliveWithin 2 (.atom (·.out))
 
-#guard (synthMonitor alive).verdict [idle, idle]
-#guard (synthMonitor alive).verdict [idle, idle, response]
-#guard (synthMonitor alive).verdict [idle, idle, idle] == false
-#guard (synthMonitor alive).verdict [response, idle, idle, idle] == false
+#guard verdict alive [idle, idle]
+#guard verdict alive [idle, idle, output]
+#guard verdict alive [idle, idle, idle] == false
+#guard verdict alive [output, idle, idle, idle] == false
+
+/-- Invariant: at most 200 objects. -/
+def range : Fml Obs := Fml.invariant (·.count ≤ 200)
+
+#guard verdict range [output 3, output 200]
+#guard verdict range [output 3, output 201] == false
+
+/-- Bounded duration: confidence is not below 50 % for more than two
+consecutive ticks. -/
+def confidence : Fml Obs := Fml.notLongerThan 2 (.atom (·.conf < 50))
+
+#guard verdict confidence [output 1 40, output 1 40]
+#guard verdict confidence [output 1 40, output 1 40, output 1 40] == false
+#guard verdict confidence [output 1 40, output 1 40, output 1 90, output 1 40]
+
+/-- Bounded step: the object count changes by at most two per tick. -/
+def consistency : Fml Obs :=
+  Fml.stepBounded fun a b => b.count ≤ a.count + 2 && a.count ≤ b.count + 2
+
+#guard verdict consistency [output 5]
+#guard verdict consistency [output 5, output 7, output 6]
+#guard verdict consistency [output 5, output 9] == false
+
+/-- Bounded duration over a step atom: the output is not frozen for more
+than two consecutive ticks. -/
+def notFrozen : Fml Obs :=
+  Fml.notLongerThan 2 (.step fun a b => a.count == b.count && a.conf == b.conf)
+
+#guard verdict notFrozen [output 5, output 5, output 5]
+#guard verdict notFrozen [output 5, output 5, output 5, output 5] == false
+#guard verdict notFrozen [output 5, output 5, output 6, output 6, output 6]
+
+/-- Provenance: an output is backed by an input within the last two ticks. -/
+def provenance : Fml Obs := Fml.backedBy 2 (.atom (·.out)) (.atom (·.inp))
+
+#guard verdict provenance [input, idle, output]
+#guard verdict provenance [input, idle, idle, output] == false
 
 end ContractMonitors

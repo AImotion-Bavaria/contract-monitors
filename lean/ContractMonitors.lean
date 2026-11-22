@@ -4,4 +4,5 @@ import ContractMonitors.Monitor
 import ContractMonitors.Compositional
 import ContractMonitors.PastTime
 import ContractMonitors.Interface
+import ContractMonitors.Patterns
 import ContractMonitors.Examples

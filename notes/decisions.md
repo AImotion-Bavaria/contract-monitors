@@ -54,7 +54,9 @@ Das Projekt baut mit Lean 4.35.0 ohne Mathlib und enthält kein `sorry`.
 | T4 | Schuldzuweisung | `no_false_blame`, `component_at_fault` | bewiesen |
 | Lokalität | Monitor sieht nur die Kanäle der Schnittstelle | `Correct.localTo`, `IContract.*_local` | bewiesen |
 
-Sprache: `atom`, `neg`, `conj`, `prev`, `since`, `onceWithin k`; abgeleitet `once`, `hist`, `histWithin`, `impl`, `prevN`, `respondsWithin`, `aliveWithin`. Beispiele mit ausführbaren Prüfungen in `Examples.lean`.
+Sprache: `atom`, `step` (zweistelliges Atom über voriger und aktueller Beobachtung), `neg`, `conj`, `prev`, `since`, `onceWithin k`; abgeleitet `once`, `hist`, `histWithin`.
+
+Muster-Schemata in `Patterns.lean`: `invariant`, `aliveWithin`, `respondsWithin`, `notLongerThan`, `stepBounded`, `backedBy`. Beispiele mit ausführbaren Prüfungen in `Examples.lean`.
 
 Noch offen im Lean-Projekt:
 
@@ -101,14 +103,21 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 |---|---|---|
 | Zeitmodell | feste Tickdauer (z. B. 10 ms), Abtast-Wrapper liefert je Kanal und Tick eine Nachricht oder ⊥ | entspricht dem getakteten FOCUS-Modell; Abtastung als Threat to Validity |
 | Mathlib | nein, nur Lean-Standardbibliothek | schneller Build, stabil, kleines Artefakt |
-| Versionierung | Git-Repository mit privatem Remote, außerhalb von OneDrive ausgecheckt; OneDrive als Ablage | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
+| Versionierung | Git-Repository `AImotion-Bavaria/contract-monitors` (privat), lokal außerhalb von OneDrive geklont; OneDrive als Ablage für PDFs | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
+| Arbeitsweise | ein Branch je Arbeitspaket, `main` wird nicht direkt geändert | Änderungen bleiben vor dem Merge sichtbar |
+
+### Laufendes Beispiel und Muster (22.11.2026)
+
+- Laufendes Beispiel: Autoware-Perzeption als System mit den Komponenten Detektion, Tracking, Prädiktion; Eingang Punktwolke und Ego-Zustand, Ausgang prädizierte Objekte.
+- Alle ausdrückbaren Muster bleiben im Paper (Tabelle in Abschnitt 3.1): Eingangs-Liveliness, Eingangs-Gültigkeit, ODD-Bedingung, Sensorzustand, Antwortzeit, Ausgangs-Liveliness, Wertebereich, Konfidenz, zeitliche Konsistenz, eingefrorene Ausgabe, Stufen-Konsistenz, Vollständigkeit im Nahbereich; Sensor-Konsistenz als vorberechnetes Signal.
+- Sprache um ein zweistelliges Atom ergänzt, damit zeitliche Konsistenz und eingefrorene Ausgabe innerhalb des Beweises liegen.
+- Die Sprache (Syntax, Semantik) steht in Abschnitt 3, Abschnitt 4 behandelt nur noch Synthese und Korrektheit.
 
 ## Folgen und offene Punkte aus den Entscheidungen
 
 - Lean-Umbau erledigt bis auf die oben unter „Noch offen“ genannten Punkte.
 - nuScenes ist nur nicht-kommerziell lizenziert: Das Artefakt enthält Skripte und Konfiguration, nicht die Daten.
 - nuScenes-ODD-Annotationen als mögliche Referenz für ODD-Annahmen prüfen; bei Verwendung auf die doppelt anonyme Begutachtung achten.
-- Git-Repository `contract-monitors` (privat, GitHub) wird angelegt; danach den Stand aus diesem Ordner übernehmen.
 - Tickdauer festlegen, sobald die Topic-Raten der Perzeptionskette bekannt sind.
 
 ## Ordnerstruktur
