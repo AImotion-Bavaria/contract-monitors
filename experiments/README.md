@@ -8,13 +8,13 @@ injection, and metrics. See `notes/experiment-setup.md` for the overall plan.
 | Path | Purpose | Status |
 |---|---|---|
 | `../lean/Main.lean` | executable `monitor`: runs the synthesised monitors of the perception contracts on a tick file | tested |
-| `../lean/ContractMonitors/Perception.lean` | contracts of system, detection, tracking, prediction | builds; refinement between component and system contracts not yet proved |
+| `../lean/ContractMonitors/Perception.lean` | contracts of system, detection, tracking, prediction | refinement of the system contract proved (`Perception.refines`); extendability not proved |
 | `tools/ticks.py` | tick file format, latching | tested via the campaign |
 | `tools/sim.py` | synthetic pipeline with fault injection that propagates downstream | tested; not a model of Autoware |
 | `tools/evaluate.py` | detection, delay, blame attribution | tested via the campaign |
 | `run.py` | campaign over fault classes, channels, seeds | tested |
 | `tools/extract.py` | rosbag2 to event file | **untested**, written without a recording |
-| `docker/monitor.Dockerfile` | container for all of the above | **untested** |
+| `docker/monitor.Dockerfile` | container for all of the above | synthetic campaign run on arm64 (M1) |
 
 ## Run the synthetic campaign
 

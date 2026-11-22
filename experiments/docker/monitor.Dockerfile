@@ -1,5 +1,5 @@
 # Stage 1 of the experiment set-up: Lean monitor and Python tools.
-# UNTESTED on arm64. Build from the repository root:
+# Build from the repository root:
 #   docker build -t cm-monitor -f experiments/docker/monitor.Dockerfile .
 # Run the synthetic campaign:
 #   docker run --rm -v "$PWD":/work cm-monitor bash experiments/docker/run-synthetic.sh

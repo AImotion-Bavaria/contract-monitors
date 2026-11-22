@@ -13,10 +13,16 @@ Gebaut und getestet (Linux x86-64, ohne Docker):
 - `experiments/tools/ticks.py`, `sim.py`, `evaluate.py` und `experiments/run.py`: Tick-Format, synthetische Kette mit Fehlerinjektion, Kennzahlen, Kampagne.
 - Synthetische Kampagne (5 Seeds, 19 Kombinationen aus Kanal und Fehlerklasse): kein Alarm in den 5 fehlerfreien Läufen, 95 von 95 Fehlern erkannt, Zuordnung in allen 95 Läufen richtig. Das zeigt nur, dass die Werkzeuge zusammenspielen. Kette und Contracts stammen aus derselben Hand, die Zahlen sind kein Ergebnis für das Paper.
 
+Bewiesen (22.11.2026, `lean/ContractMonitors/Temporal.lean` und `Perception.lean`):
+
+- `Perception.refines`: Die Komposition der Contracts von Detektion, Tracking und Prädiktion verfeinert den System-Contract, für alle Werte der Schranken. Damit ist die Voraussetzung der Sätze zum verfeinerungserhaltenden Monitoring für genau die Contracts bewiesen, die das Programm `monitor` ausführt.
+- `Perception.system_guarantee_of_silent_monitors`: Trace-Version des Satzes, instanziiert für die Perzeptionskette.
+- Zwei Kettenregeln für die Muster: Antwortfenster addieren sich (`respondsWithin_chain`); eine Komponente mit Antwortfenster k reicht Lebendigkeit mit um k vergrößertem Fenster weiter (`aliveWithin_chain`).
+- Stefan hat die synthetische Kampagne im Docker-Container auf dem M1 ausgeführt und dieselbe Tabelle erhalten. Dockerfile und Stufe 1 laufen damit auf arm64.
+
 Geschrieben, aber ungetestet:
 
 - `experiments/tools/extract.py` (rosbag2 nach Tick-Datei): ohne Aufzeichnung geschrieben. Topic-Namen, Feldnamen der Autoware-Nachrichten und das Registrieren der Nachrichtendefinitionen sind an einem echten Bag zu prüfen.
-- `experiments/docker/monitor.Dockerfile`: hier nicht gebaut, auf arm64 nicht ausprobiert.
 
 Abweichungen vom Vorschlag unten:
 
@@ -26,7 +32,7 @@ Abweichungen vom Vorschlag unten:
 
 Offen:
 
-- Verfeinerung der konkreten Perzeptions-Contracts in Lean beweisen (etwa: aus den Antwortfenstern der Komponenten folgt das des Systems). Bisher sind nur die allgemeinen Sätze bewiesen, nicht ihre Voraussetzung für diese Instanz.
+- Erweiterbarkeit (Extendability) der konkreten Perzeptions-Contracts ist nicht bewiesen. Sie ist die Nebenbedingung der Präfix-Version des Satzes; die Trace-Version braucht sie nicht.
 - Fehlerinjektion für die echte Kette: ein kleiner ROS-2-Knoten, der ein Topic umleitet und stört, auf dem Laborrechner.
 - Schranken in `experiments/configs/params.default` an die gemessenen Topic-Raten anpassen.
 
