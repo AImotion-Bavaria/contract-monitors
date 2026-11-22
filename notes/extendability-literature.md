@@ -26,10 +26,28 @@ Die Äquivalenz „p ist erweiterbar ⇔ p weist genau die bad prefixes von □p
 
 | Arbeit | Inhalt laut Abstract | Abgrenzung (vorläufig) |
 |---|---|---|
-| Luckcuck, Farrell, Ferrando, Cardoso, Dennis, Fisher: A Compositional Approach to Verifying Modular Robotic Systems (arXiv:2208.05507; Robotics and Autonomous Systems) | A/G-Contracts in Prädikatenlogik für ROS-Knoten, Inferenzregeln zur Herleitung von Systemeigenschaften aus Knoten-Contracts, eigene Contract-Sprache RCL, automatische Übersetzung in ausführbare Monitore | **Die nächstliegende Arbeit.** Nach Abstract keine mechanisierte Korrektheit der Monitore und keine Aussage über endliche Beobachtungen; das ist am Volltext zu prüfen. |
+| Luckcuck, Farrell, Ferrando, Cardoso, Dennis, Fisher: A Compositional Approach to Verifying Modular Robotic Systems (arXiv:2208.05507; Robotics and Autonomous Systems) | A/G-Contracts in Prädikatenlogik für ROS-Knoten, Inferenzregeln zur Herleitung von Systemeigenschaften aus Knoten-Contracts, eigene Contract-Sprache RCL, automatische Übersetzung in ausführbare Monitore | **Die nächstliegende Arbeit.** Am Volltext geprüft, siehe eigener Abschnitt unten. |
 | Sokolsky, Zhang, Lee, McDougall: Monitoring Assumptions in Assume-Guarantee Contracts (PrePost 2016, EPTCS 208) | Garantien werden vor der Auslieferung verifiziert, Annahmen danach zur Laufzeit überwacht; Konstruktion und Verifikation der Annahme-Monitore | Überwacht nur Annahmen einzelner Komponenten; keine Hierarchie. |
 | Xu, Ng, Easwaran: Automatic Generation of Hierarchical Contracts for Resilience in Cyber-Physical Systems (RTCSA 2019) | Hierarchie von A/G-Contracts zur Überwachung nichtfunktionaler Eigenschaften; automatische Zerlegung eines Wurzel-Contracts | Hierarchische Überwachung, aber für numerische nichtfunktionale Größen und ohne formalen Korrektheitsnachweis der Monitore. |
 | Cimatti, Grosen, Larsen, Tonetta, Zimmermann: Exploiting Assumptions for Effective Monitoring of Real-Time Properties under Partial Observability (arXiv:2409.05456) | Annahmen über das Systemverhalten ermöglichen frühere Verdikte und Überwachung nicht beobachtbarer Teile | Nutzt Annahmen zur Vorausschau eines einzelnen Monitors; keine Verfeinerungshierarchie. |
+
+## Luckcuck et al. im Detail
+
+Geprüft an arXiv:2208.05507v3 (HTML-Fassung), ausgewertet über eine automatische Zusammenfassung mit gezielten Fragen; die Formeldarstellung in §3.2 war in der Quelle unvollständig. Vor der Einreichung sind die Aussagen an der Zeitschriftenfassung zu bestätigen.
+
+| Aspekt | Luckcuck et al. | Unser Paper |
+|---|---|---|
+| Contract-Form | A(i) ⇒ ◇G(o): Eine Eingabe führt irgendwann zu einer Ausgabe; keine Zeitschranken (§3.2) | Annahme und Garantie als Sicherheitseigenschaften über getakteten Strömen, mit Zeitfenstern |
+| Herleitung auf Systemebene | Kalkül mit Regeln R1 bis R3 (Kette, Verzweigung, Vereinigung) plus R4 für Schleifen; manuell angewendet; Korrektheitsbeweise „for brevity“ ausgelassen (§3.4) | Verfeinerung und Komposition mit mechanisierten Beweisen |
+| Verfeinerung | kein Verfeinerungsoperator; Hierarchie nur als Abstraktion zu zusammengesetzten Knoten (§3.1) | Verfeinerungsrelation als Kern |
+| Monitore | nur für Garantien; Werkzeug Vanda übersetzt nach ROSMonitoring/RML (§3.6); kein Korrektheitsbeweis der Übersetzung | Synthese mit bewiesener Korrektheit; der bewiesene Monitor wird ausgeführt |
+| Stille Monitore ⇒ Systemeigenschaft | informell behauptet (§3) | präzisiert, bewiesen, und als nur unter Sackgassenfreiheit gültig gezeigt |
+| Annahmen und Schuld | Annahmen werden nicht überwacht; eine Garantieverletzung ist von einer Annahmeverletzung nicht unterscheidbar; Annahme-Monitore sind Future Work (§6) | getrennte Annahme- und Garantie-Monitore mit Schuldsatz |
+| Mechanisierung | keine; Automatisierung des Kalküls mit Vampire als Future Work (§3.4) | Lean 4 |
+
+Einordnung: Die Arbeit behauptet informell genau die Aussage, die unser Präfix-Satz präzisiert. Das stützt die Motivation und zeigt zugleich, wo unser Beitrag liegt. Offen bleibt bei ihnen, wie ein Monitor eine „irgendwann“-Garantie auf einem endlichen Lauf widerlegen kann; dazu fand sich keine Aussage.
+
+Stärken der Arbeit, die wir nicht haben: Prädikatenlogik über Daten, heterogene Verifikation der Knoten (Modellprüfung, Hoare-Logik, Dafny), Fallstudie an einem realen Rover.
 
 ## Folgen für das Paper
 
@@ -39,7 +57,7 @@ Die Äquivalenz „p ist erweiterbar ⇔ p weist genau die bad prefixes von □p
 
 ## Offen
 
-- Volltext von Luckcuck et al. lesen: Wie werden Systemeigenschaften hergeleitet, und gilt die Herleitung für endliche Läufe?
+- Aussagen zu Luckcuck et al. an der Zeitschriftenfassung bestätigen (bisher arXiv v3 über automatische Zusammenfassung).
 - Gezielt nach „circular assume-guarantee reasoning soundness safety“ (McMillan; Alur und Henzinger; Jonsson und Tsay) suchen: Dort treten Sicherheits- und Abschlussbedingungen als Voraussetzung der Kompositionsregeln auf.
 - Literatur zu Schnittstellentheorien (interface automata, modal specifications) auf eine Entsprechung der Bedingung prüfen.
 - Bibliografische Angaben der neuen Einträge prüfen; sie stehen vorerst in `paper/refs-new.bib`.
