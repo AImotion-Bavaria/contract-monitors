@@ -104,7 +104,7 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 | Zeitmodell | feste Tickdauer (z. B. 10 ms), Abtast-Wrapper liefert je Kanal und Tick eine Nachricht oder ⊥ | entspricht dem getakteten FOCUS-Modell; Abtastung als Threat to Validity |
 | Mathlib | nein, nur Lean-Standardbibliothek | schneller Build, stabil, kleines Artefakt |
 | Versionierung | Git-Repository `AImotion-Bavaria/contract-monitors` (privat), lokal außerhalb von OneDrive geklont; OneDrive als Ablage für PDFs | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
-| Arbeitsweise | ein Branch je Arbeitspaket, `main` wird nicht direkt geändert | Änderungen bleiben vor dem Merge sichtbar |
+| Arbeitsweise | alle Änderungen direkt auf `main` | ein Autor, ein Stand; kein Umschalten zwischen Branches |
 
 ### Laufendes Beispiel und Muster (22.11.2026)
 
