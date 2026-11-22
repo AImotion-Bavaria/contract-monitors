@@ -60,4 +60,3 @@ Stärken der Arbeit, die wir nicht haben: Prädikatenlogik über Daten, heteroge
 - Aussagen zu Luckcuck et al. an der Zeitschriftenfassung bestätigen (bisher arXiv v3 über automatische Zusammenfassung).
 - Gezielt nach „circular assume-guarantee reasoning soundness safety“ (McMillan; Alur und Henzinger; Jonsson und Tsay) suchen: Dort treten Sicherheits- und Abschlussbedingungen als Voraussetzung der Kompositionsregeln auf.
 - Literatur zu Schnittstellentheorien (interface automata, modal specifications) auf eine Entsprechung der Bedingung prüfen.
-- Bibliografische Angaben der neuen Einträge prüfen; sie stehen vorerst in `paper/refs-new.bib`.

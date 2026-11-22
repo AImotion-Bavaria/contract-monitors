@@ -112,7 +112,7 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 
 - Der Begriff ist nicht neu (bad prefix, frühestmögliche Erkennung, machine closure). Das Paper beansprucht deshalb nicht den Begriff, sondern seine Rolle für die Übertragung der Verfeinerung auf endliche Beobachtungen. Details und offene Recherchen in `notes/extendability-literature.md`.
 - Nächstliegende verwandte Arbeit: Luckcuck et al. (Contracts und Monitore für ROS-Knoten); Volltext ist noch zu lesen.
-- Neue Literatureinträge stehen vorerst in `paper/refs-new.bib` und sind nach Prüfung in `refs.bib` zu übernehmen.
+- Alle Literatureinträge stehen in `paper/refs.bib`.
 
 ### Messung für RQ1 (22.11.2026)
 
