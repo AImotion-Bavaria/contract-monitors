@@ -108,6 +108,12 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 | Versionierung | Git-Repository `AImotion-Bavaria/contract-monitors` (privat), lokal außerhalb von OneDrive geklont; OneDrive als Ablage für PDFs | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
 | Arbeitsweise | alle Änderungen direkt auf `main` | ein Autor, ein Stand; kein Umschalten zwischen Branches |
 
+### Einordnung der Erweiterbarkeit (22.11.2026)
+
+- Der Begriff ist nicht neu (bad prefix, frühestmögliche Erkennung, machine closure). Das Paper beansprucht deshalb nicht den Begriff, sondern seine Rolle für die Übertragung der Verfeinerung auf endliche Beobachtungen. Details und offene Recherchen in `notes/extendability-literature.md`.
+- Nächstliegende verwandte Arbeit: Luckcuck et al. (Contracts und Monitore für ROS-Knoten); Volltext ist noch zu lesen.
+- Neue Literatureinträge stehen vorerst in `paper/refs-new.bib` und sind nach Prüfung in `refs.bib` zu übernehmen.
+
 ### Messung für RQ1 (22.11.2026)
 
 - Der Katalog wird geteilt: Die 35 Einträge des ersten Durchgangs sind der Entwurfssatz, an dem die Sprache geformt wurde. Gemessen wird an einem zurückgehaltenen Satz aus Quellen, die beim Sprachentwurf nicht ausgewertet waren (Kandidat: ISO/PAS 8800). Der zurückgehaltene Satz wird erst eingestuft, wenn die Sprache eingefroren ist.
