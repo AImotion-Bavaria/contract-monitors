@@ -4,3 +4,7 @@ defaultTargets = ["ContractMonitors"]
 
 [[lean_lib]]
 name = "ContractMonitors"
+
+[[lean_exe]]
+name = "monitor"
+root = "Main"

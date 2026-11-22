@@ -1,0 +1,14 @@
+# Bounds of the perception contracts (defaults of lean/ContractMonitors/Perception.lean).
+# Windows are in ticks. Adjust once the topic rates of the real pipeline are known.
+kIn=12
+kDet=5
+kTrk=4
+kPred=4
+kConf=30
+kFrozen=35
+kProv=10
+minPoints=1000
+maxObjects=100
+maxStep=3
+minConf=300
+maxSpeed=60000

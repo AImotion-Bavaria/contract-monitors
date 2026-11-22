@@ -1,6 +1,34 @@
-# Experimente lokal auf einem Mac mit M1: Vorschlag
+# Experimente: Aufbau und Stand
 
-Stand: 22.11.2026. Vorschlag, noch nichts davon ist ausprobiert. Die Docker-Skizzen unten sind ungetestet.
+Stand: 22.11.2026. Stufe 1 ist gebaut und mit synthetischen Daten getestet (siehe „Stand der Umsetzung“). Die übrigen Abschnitte sind der ursprüngliche Vorschlag; wo er überholt ist, steht es im nächsten Abschnitt.
+
+## Stand der Umsetzung
+
+Entschieden (Antworten vom 22.11.2026): Im Labor steht ein Linux-Rechner mit NVIDIA-GPU, den Stefan bedient. Der Mac hat 16 GB Arbeitsspeicher und etwa 50 GB freien Plattenplatz. Stufe 1 wird gebaut.
+
+Gebaut und getestet (Linux x86-64, ohne Docker):
+
+- `lean/ContractMonitors/Perception.lean`: Contracts für System, Detektion, Tracking und Prädiktion als Instanzen der Muster, 31 Monitore, alle Schranken als Parameter.
+- `lean/Main.lean`: Programm `monitor`, liest eine Tick-Datei und schreibt je Tick die Verdikte aller Monitore.
+- `experiments/tools/ticks.py`, `sim.py`, `evaluate.py` und `experiments/run.py`: Tick-Format, synthetische Kette mit Fehlerinjektion, Kennzahlen, Kampagne.
+- Synthetische Kampagne (5 Seeds, 19 Kombinationen aus Kanal und Fehlerklasse): kein Alarm in den 5 fehlerfreien Läufen, 95 von 95 Fehlern erkannt, Zuordnung in allen 95 Läufen richtig. Das zeigt nur, dass die Werkzeuge zusammenspielen. Kette und Contracts stammen aus derselben Hand, die Zahlen sind kein Ergebnis für das Paper.
+
+Geschrieben, aber ungetestet:
+
+- `experiments/tools/extract.py` (rosbag2 nach Tick-Datei): ohne Aufzeichnung geschrieben. Topic-Namen, Feldnamen der Autoware-Nachrichten und das Registrieren der Nachrichtendefinitionen sind an einem echten Bag zu prüfen.
+- `experiments/docker/monitor.Dockerfile`: hier nicht gebaut, auf arm64 nicht ausprobiert.
+
+Abweichungen vom Vorschlag unten:
+
+1. **Fehlerinjektion in aufgezeichnete Bags reicht nicht.** Ein Fehler, der nachträglich in ein aufgezeichnetes Topic eingesetzt wird, wirkt nicht auf die nachgelagerten Komponenten: Deren aufgezeichnete Ausgaben stammen aus dem fehlerfreien Lauf. Die Garantie-Monitore stromabwärts sehen dann Ausgaben, die zu den gestörten Eingaben nicht passen, und die Zuordnung (RQ3) wird verfälscht. Folge: Für RQ2 und RQ3 muss der Fehler vor dem (erneuten) Lauf der nachgelagerten Komponenten injiziert werden. Tracking und Prädiktion brauchen keine GPU, die Detektion schon. Die gestörten Läufe entstehen deshalb auf dem Laborrechner, einmal je Fehlerfall; der Mac wertet die so erzeugten Bags aus. Rein offline gültig bleiben nur Fehler auf dem letzten Kanal der Kette. Die Aussage „Schritt B enthält alle Messungen“ im Abschnitt „Kernidee“ gilt daher nur für Auswertung und Monitorlauf, nicht für die Injektion.
+2. **Probelauf 2a besser im Labor.** Mit 16 GB Arbeitsspeicher und etwa 50 GB Platz ist das Autoware-Image auf dem Mac knapp. Der Probelauf mit dem Beispiel-Bag findet auf dem Laborrechner statt; der Mac bleibt für Stufe 1.
+3. **Format.** Tick-Dateien sind einfache Textzeilen (`name=wert`), nicht JSON Lines. Das spart einen JSON-Parser in Lean. Das Lean-Programm heißt `lean/Main.lean`, die Injektion steckt in `sim.py` statt in einem eigenen `inject.py`.
+
+Offen:
+
+- Verfeinerung der konkreten Perzeptions-Contracts in Lean beweisen (etwa: aus den Antwortfenstern der Komponenten folgt das des Systems). Bisher sind nur die allgemeinen Sätze bewiesen, nicht ihre Voraussetzung für diese Instanz.
+- Fehlerinjektion für die echte Kette: ein kleiner ROS-2-Knoten, der ein Topic umleitet und stört, auf dem Laborrechner.
+- Schranken in `experiments/configs/params.default` an die gemessenen Topic-Raten anpassen.
 
 ## Ausgangslage
 

@@ -7,3 +7,4 @@ import ContractMonitors.Interface
 import ContractMonitors.Extendable
 import ContractMonitors.Patterns
 import ContractMonitors.Examples
+import ContractMonitors.Perception

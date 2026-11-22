@@ -1,0 +1,12 @@
+{
+  "tick_ms": 10,
+  "topics": {
+    "cloud": "/sensing/lidar/concatenated/pointcloud",
+    "det": "/perception/object_recognition/detection/objects",
+    "trk": "/perception/object_recognition/tracking/objects",
+    "pred": "/perception/object_recognition/objects"
+  },
+  "constants": {
+    "odd": 1
+  }
+}
