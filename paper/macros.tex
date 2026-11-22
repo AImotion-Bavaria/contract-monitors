@@ -2,7 +2,7 @@
 % Loaded from main.tex via \input{macros}.
 
 % --- Notation (FOCUS) ---------------------------------------------------
-\newcommand{\sys}[1]{\mathfrak{#1}}            % systems: \sys{s}
+\newcommand{\sys}[1]{{#1}}            % systems: \sys{s}
 \newcommand{\chan}[1]{\vec{#1}}                % channel histories
 \newcommand{\nat}{\mathbb{N}}
 \newcommand{\natp}{\mathbb{N}^{+}}
@@ -10,9 +10,9 @@
 \newcommand{\refines}{\preccurlyeq}
 \newcommand{\comp}{\otimes}
 \newcommand{\ctr}[2]{(#1,#2)}                  % contract (A,G)
-\newcommand{\SYSTEM}{\textsf{SYSTEM}}
-\newcommand{\CHANNEL}{\textsf{CHANNEL}}
-\newcommand{\MESSAGE}{\textsf{MESSAGE}}
+\newcommand{\SYSTEM}{\texttt{SYSTEM}}
+\newcommand{\CHANNEL}{\texttt{CHANNEL}}
+\newcommand{\MESSAGE}{\texttt{MESSAGE}}
 \newcommand{\iface}[2]{(#1 \triangleright #2)}       % syntactic interface
 \newcommand{\pre}[2]{#1{\downarrow}#2}               % prefix of length #2
 \newcommand{\proj}[2]{#1|_{#2}}                      % projection to channels
