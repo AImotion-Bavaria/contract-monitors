@@ -1,0 +1,31 @@
+% Own definitions: notation, helpers, listings setup.
+% Loaded from main.tex via \input{macros}.
+
+% --- Notation (FOCUS) ---------------------------------------------------
+\newcommand{\sys}[1]{\mathfrak{#1}}            % systems: \sys{s}
+\newcommand{\chan}[1]{\vec{#1}}                % channel histories
+\newcommand{\nat}{\mathbb{N}}
+\newcommand{\natp}{\mathbb{N}^{+}}
+\newcommand{\nomsg}{\bot}
+\newcommand{\refines}{\preccurlyeq}
+\newcommand{\comp}{\otimes}
+\newcommand{\ctr}[2]{(#1,#2)}                  % contract (A,G)
+\newcommand{\SYSTEM}{\textsf{SYSTEM}}
+\newcommand{\CHANNEL}{\textsf{CHANNEL}}
+\newcommand{\MESSAGE}{\textsf{MESSAGE}}
+\newcommand{\iface}[2]{(#1 \triangleright #2)}       % syntactic interface
+\newcommand{\pre}[2]{#1{\downarrow}#2}               % prefix of length #2
+\newcommand{\proj}[2]{#1|_{#2}}                      % projection to channels
+\newcommand{\always}[1]{\Box #1}                     % property induced by a prefix predicate
+\newcommand{\todo}[1]{\textcolor{red}{[#1]}}
+
+\lstdefinelanguage{Lean}{
+  morekeywords={theorem,def,structure,inductive,where,by,fun,namespace,end,
+    variable,import,open,abbrev,example,lemma},
+  sensitive=true, morecomment=[l]{--}, morecomment=[n]{/-}{-/}}
+\lstset{language=Lean,basicstyle=\ttfamily\footnotesize,columns=fullflexible,
+  keywordstyle=\bfseries,commentstyle=\itshape\color{gray},literate=
+  {→}{{$\to$}}1 {∀}{{$\forall$}}1 {∃}{{$\exists$}}1 {∧}{{$\land$}}1
+  {∨}{{$\lor$}}1 {¬}{{$\lnot$}}1 {≼}{{$\preccurlyeq$}}1 {⊗}{{$\otimes$}}1
+  {σ}{{$\sigma$}}1 {φ}{{$\varphi$}}1 {ψ}{{$\psi$}}1 {↔}{{$\leftrightarrow$}}1
+  {₁}{{$_1$}}1 {₂}{{$_2$}}1}

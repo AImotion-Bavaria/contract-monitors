@@ -1,0 +1,6 @@
+name = "ContractMonitors"
+version = "0.1.0"
+defaultTargets = ["ContractMonitors"]
+
+[[lean_lib]]
+name = "ContractMonitors"

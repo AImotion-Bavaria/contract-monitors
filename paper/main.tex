@@ -1,0 +1,53 @@
+% ECSA 2027 Research Track -- Springer LNCS, double-anonymous.
+% Limit (provisional): 16 pages + 2 pages for data availability,
+% acknowledgements, and references. Abstract due 12 March 2027,
+% paper due 19 March 2027 (AoE).
+\documentclass[runningheads]{llncs}
+
+\usepackage[T1]{fontenc}
+\usepackage[british]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\renewcommand\UrlFont{\color{blue}\rmfamily}
+
+% Own definitions
+\input{macros}
+
+\begin{document}
+
+\title{Verified Compositional Runtime Monitoring for AI-Enabled Software
+Architectures\thanks{Working title.}}
+\titlerunning{Verified Compositional Runtime Monitoring}
+
+% Double-anonymous review: no names, affiliations, or identifying URLs.
+\author{Anonymous Author(s)}
+\authorrunning{Anonymous Author(s)}
+\institute{Anonymous Institution}
+
+\maketitle
+
+\input{include/abstract}
+
+\input{include/introduction}
+\input{include/background}
+\input{include/contracts}
+\input{include/synthesis}
+\input{include/compositional}
+\input{include/mechanisation}
+\input{include/evaluation}
+\input{include/related-work}
+\input{include/discussion}
+\input{include/conclusion}
+\input{include/data-availability}
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+
+\end{document}

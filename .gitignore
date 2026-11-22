@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# LaTeX
+.texpadtmp/
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+paper/main.pdf
+
+# Lean
+.lake/
+
+# Third-party PDFs (publisher copies) stay out of the repository
+/*.pdf

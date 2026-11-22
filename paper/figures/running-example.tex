@@ -1,0 +1,18 @@
+% TikZ picture only; the figure environment and caption live in the
+% including file (include/background.tex).
+\begin{tikzpicture}[
+    node distance=6mm and 9mm,
+    comp/.style={draw, minimum width=17mm, minimum height=7mm, font=\small\sffamily},
+    mon/.style={comp, fill=green!15},
+    flow/.style={-{Latex[length=2mm]}},
+    obs/.style={-{Latex[length=2mm]}, dashed},
+  ]
+  \node[comp] (sense) {Sensing};
+  \node[comp, right=of sense] (perc) {Perception};
+  \node[comp, right=of perc] (plan) {Planning};
+  \node[mon, below=of perc] (mon) {Monitor};
+  \draw[flow] (sense) -- (perc);
+  \draw[flow] (perc) -- (plan);
+  \draw[obs] (sense.south) |- (mon.west);
+  \draw[obs] (plan.south) |- (mon.east);
+\end{tikzpicture}
