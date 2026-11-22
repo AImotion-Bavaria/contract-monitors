@@ -17,6 +17,15 @@
 \newcommand{\pre}[2]{#1{\downarrow}#2}               % prefix of length #2
 \newcommand{\proj}[2]{#1|_{#2}}                      % projection to channels
 \newcommand{\always}[1]{\Box #1}                     % property induced by a prefix predicate
+% Past-time contract language
+\newcommand{\Yop}{\mathsf{Y}}                         % previous tick
+\newcommand{\Sop}{\mathbin{\mathsf{S}}}               % since
+\newcommand{\Oop}{\mathsf{O}}                         % once
+\newcommand{\Hop}{\mathsf{H}}                         % historically
+\newcommand{\Owin}[1]{\mathsf{O}_{\leq #1}}           % once within the last #1 ticks
+\newcommand{\Hwin}[1]{\mathsf{H}_{\leq #1}}           % throughout the last #1 ticks
+\newcommand{\true}{\mathit{true}}
+\newcommand{\sat}{\models}
 \newcommand{\todo}[1]{\textcolor{red}{[#1]}}
 
 \lstdefinelanguage{Lean}{

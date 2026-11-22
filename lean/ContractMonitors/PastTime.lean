@@ -8,8 +8,8 @@ They are evaluated at the last position of a prefix, so every formula denotes
 a prefix predicate and is monitorable without delay.
 
 `synth` translates a formula into a state machine whose state consists of one
-Boolean per temporal operator and one counter, bounded by the window length,
-per bounded operator. `synthMonitor_correct` states that its verdict
+Boolean per temporal operator, one counter, bounded by the window length,
+per bounded operator, and one stored observation per step atom. `synthMonitor_correct` states that its verdict
 coincides with the semantics on every prefix.
 -/
 
@@ -18,6 +18,8 @@ namespace ContractMonitors
 /-- Past-time formulas with bounded windows. -/
 inductive Fml (σ : Type) where
   | atom (p : σ → Bool)
+  /-- `step q`: `q` relates the previous and the current observation. -/
+  | step (q : σ → σ → Bool)
   | neg (φ : Fml σ)
   | conj (φ ψ : Fml σ)
   /-- `prev φ`: `φ` held one tick ago. -/
@@ -35,6 +37,8 @@ namespace Fml
 def holdsRev : Fml σ → List σ → Bool
   | _, [] => false
   | .atom p, s :: _ => p s
+  | .step _, [_] => false
+  | .step q, s :: s' :: _ => q s' s
   | .neg φ, s :: rest => !(φ.holdsRev (s :: rest))
   | .conj φ ψ, s :: rest => φ.holdsRev (s :: rest) && ψ.holdsRev (s :: rest)
   | .prev φ, _ :: rest => φ.holdsRev rest
@@ -97,6 +101,12 @@ def atom (p : σ → Bool) : Machine σ where
   State := Unit
   init := ()
   step := fun _ x => ((), p x)
+
+/-- Stores the previous observation. -/
+def step2 (q : σ → σ → Bool) : Machine σ where
+  State := Option σ
+  init := none
+  step := fun s x => (some x, match s with | none => false | some y => q y x)
 
 def neg (m : Machine σ) : Machine σ where
   State := m.State
@@ -261,6 +271,7 @@ end Machine
 /-- **Monitor synthesis.** One combinator per operator. -/
 def synth : Fml σ → Machine σ
   | .atom p => Machine.atom p
+  | .step q => Machine.step2 q
   | .neg φ => Machine.neg (synth φ)
   | .conj φ ψ => Machine.conj (synth φ) (synth ψ)
   | .prev φ => Machine.prev (synth φ)
@@ -271,6 +282,13 @@ theorem synth_outRev (φ : Fml σ) : ∀ l, (synth φ).outRev l = φ.holdsRev l 
   induction φ with
   | atom p =>
     intro l; cases l <;> simp [synth, Machine.atom, Machine.outRev, Fml.holdsRev]
+  | step q =>
+    intro l
+    cases l with
+    | nil => simp [Machine.outRev, Fml.holdsRev]
+    | cons x rest =>
+      cases rest <;>
+        simp [synth, Machine.step2, Machine.outRev, Machine.stateRev, Fml.holdsRev]
   | neg φ ih =>
     intro l
     cases l with
