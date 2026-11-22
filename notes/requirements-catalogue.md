@@ -29,13 +29,13 @@ Spalte „Beleg“: **b** = in der Quelle so benannt; **a** = aus der Quelle abg
 | R02 | Nachrichtenrate eines Kanals entspricht f | T25 | b | Liveliness + Mindestabstand | ja | untere Schranke über Fenster, obere über Mindestabstand |
 | R03 | Wert liegt im Bereich [l, u] | T25 | b | Invariant | ja | |
 | R04 | Wert erfüllt Schwellwertbedingung | T25 | b | Invariant | ja | |
-| R05 | Zeitliche Konsistenz: Abweichung über Δt höchstens ε | T25 | b | Bounded step | teilweise | für Δt = 1 Tick ja; für Δt > 1 fehlt der Vergleich mit dem Wert vor k Ticks |
+| R05 | Zeitliche Konsistenz: Abweichung über Δt höchstens ε | T25 | b | Bounded step / Bounded drift | ja | Atom mit Abstand k vergleicht mit dem Wert vor k Ticks |
 | R06 | Zeitliche Konsistenz: Abweichung vom gleitenden Mittel höchstens ε | T25 | b | Invariant | Signal | Aggregat über Fenster |
 | R07 | Datenquellen beschreiben dasselbe Phänomen (Korrelation, zeitversetzt) | T25 | b | Invariant | Signal | Korrelation ist ein Aggregat |
 | R08 | Ressourcenverbrauch unter Schwelle | T25 | b | Invariant | ja | sofern der Verbrauch als Kanal vorliegt |
 | R09 | Liveliness: Nachrichten im Abstand Δt ± ε | T25 | b | Liveliness + Mindestabstand | ja | |
 | R10 | Topic wird nach dem Start empfangen | AW | b | Liveliness | ja | `topic_state_monitor`: NotReceived |
-| R11 | Topic-Rate fällt nicht unter Warn- bzw. Fehlerschwelle | AW | b | Liveliness | teilweise | „mindestens eine Nachricht je Fenster“ ja; „mindestens n Nachrichten je Fenster“ braucht Zählen |
+| R11 | Topic-Rate fällt nicht unter Warn- bzw. Fehlerschwelle | AW | b | Rate | ja | Zählen im Fenster |
 | R12 | Kein Ausbleiben eines Topics länger als T | AW | b | Liveliness | ja | `topic_state_monitor`: Timeout |
 | R13 | Latenz der Verarbeitungskette unter Schwelle | AW | b | Response | ja | Ende-zu-Ende-Response zwischen Ein- und Ausgangskanal |
 | R14 | Diagnosestatus eines Knotens ist OK | AW | a | Invariant | ja | Diagnose als Kanal |
@@ -59,14 +59,14 @@ Spalte „Beleg“: **b** = in der Quelle so benannt; **a** = aus der Quelle abg
 | R32 | Stabilität der Ausgabe unter Eingabestörung | SUR | b | – | nein | erfordert erneute Ausführung des Modells |
 | R33 | Konsistenz mit unabhängigem Sensor | SUR | b | Invariant | Signal | geometrischer Abgleich außerhalb des Monitors |
 | R34 | Jedes Objekt wird irgendwann getrackt | SUR | a | Response | teilweise | unbeschränkt nein (Liveness); mit Frist ja |
-| R35 | Enthaltungsrate der Komponente beschränkt | SUR | a | Bounded duration | teilweise | „nicht länger als k Ticks in Folge“ ja; Rate über Fenster braucht Zählen |
+| R35 | Enthaltungsrate der Komponente beschränkt | SUR | a | Rate (obere Schranke) | ja | Zählen im Fenster |
 
 ## Zwischenstand
 
 | Einstufung | Anzahl | Anteil |
 |---|---|---|
-| ja | 17 | 49 % |
-| teilweise | 8 | 23 % |
+| ja | 20 | 57 % |
+| teilweise | 5 | 14 % |
 | Signal | 7 | 20 % |
 | nein | 3 | 9 % |
 | Summe | 35 | |
@@ -75,11 +75,16 @@ Die Zahlen sind vorläufig: Die Auswahl stammt aus einem ersten Durchgang, 9 der
 
 ## Beobachtungen
 
-Drei Lücken kehren wieder und erklären fast alle Einträge „teilweise“:
+Der erste Durchgang zeigte drei wiederkehrende Lücken. Zwei sind inzwischen durch Spracherweiterungen geschlossen (22.11.2026), wodurch R05, R11 und R35 von „teilweise“ auf „ja“ gewechselt sind:
 
-1. **Zählen im Fenster** (R11, R35): „mindestens n Ereignisse in den letzten k Ticks“. Ein Operator mit beschränktem Zähler wäre eine kleine Spracherweiterung.
-2. **Vergleich über mehr als einen Tick** (R05): Das zweistellige Atom vergleicht nur benachbarte Beobachtungen. Ein Puffer der letzten k Beobachtungen bliebe speicherbeschränkt.
-3. **Aussagen je Objekt** (R16, R28, R34): Eigenschaften einzelner Objekt-IDs über die Zeit brauchen Quantoren über Daten. Das liegt grundsätzlich außerhalb einer aussagenlogischen Sprache und wäre als Grenze zu benennen.
+1. **Zählen im Fenster** (R11, R35): Operator `countWithin k n`, Schemata `atLeastWithin` und `atMostWithin`.
+2. **Vergleich über mehr als einen Tick** (R05): Atom `lag k`, Schema `driftBounded`.
+
+Offen bleibt:
+
+3. **Aussagen je Objekt** (R16, R28, R34): Eigenschaften einzelner Objekt-IDs über die Zeit brauchen Quantoren über Daten. Das liegt grundsätzlich außerhalb einer aussagenlogischen Sprache und ist im Paper als Grenze benannt.
+
+Die Einstufung vor den Erweiterungen (17 / 8 / 7 / 3) ist für RQ1 als Vergleichswert festzuhalten: Sie zeigt, dass der Katalog die Sprache geformt hat.
 
 Die Einträge „Signal“ betreffen durchweg Größen, die ein eigenes Modell oder eine Signalverarbeitung berechnet. Die Einträge „nein“ betreffen Interna der Komponente oder verlangen deren erneute Ausführung.
 
@@ -88,4 +93,3 @@ Die Einträge „Signal“ betreffen durchweg Größen, die ein eigenes Modell o
 - Abgeleitete Einträge (Beleg **a**) an der Autoware-Dokumentation belegen oder streichen.
 - Jeden Eintrag „ja“ und „teilweise“ als Formel in Lean aufschreiben; die Einstufung gilt erst dann als gesichert.
 - Prüfen, ob ISO/PAS 8800 und weitere Quellen Anforderungen liefern, die hier fehlen.
-- Entscheiden, ob die Sprache um Zählen im Fenster und einen k-Schritt-Vergleich erweitert wird.

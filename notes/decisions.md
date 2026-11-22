@@ -47,7 +47,7 @@ Das Projekt baut mit Lean 4.35.0 ohne Mathlib und enthält kein `sorry`.
 | Verfeinerung | Präordnung, Korrektheit | `Refines.refl`, `Refines.trans`, `Sat.of_refines` | bewiesen |
 | Komposition | unabhängige Implementierbarkeit, Monotonie | `Sat.comp`, `comp_mono` | bewiesen |
 | T1 | Monitor-Korrektheit der Synthese | `synthMonitor_correct` | bewiesen |
-| T1b | beschränkter Speicher (Zähler ≤ Fensterlänge + 1) | `Machine.ctr_le` | bewiesen |
+| T1b | beschränkter Speicher (Zähler ≤ Fensterlänge + 1, Puffer ≤ k) | `Machine.ctr_le`, `lag_buffer_le`, `count_buffer_le` | bewiesen |
 | T2 | zentral = verteilt | `verdict_prod`, `Correct.prod` | bewiesen |
 | T3 | Verfeinerungserhalt, Trace-Version | `system_guarantee_of_no_component_alarm` | bewiesen |
 | T3 | Verfeinerungserhalt, Präfix-Version mit Erweiterbarkeit | `system_guarantee_on_prefix` | bewiesen |
@@ -57,9 +57,9 @@ Das Projekt baut mit Lean 4.35.0 ohne Mathlib und enthält kein `sorry`.
 | T4 | Schuldzuweisung | `no_false_blame`, `component_at_fault` | bewiesen |
 | Lokalität | Monitor sieht nur die Kanäle der Schnittstelle | `Correct.localTo`, `IContract.*_local` | bewiesen |
 
-Sprache: `atom`, `step` (zweistelliges Atom über voriger und aktueller Beobachtung), `neg`, `conj`, `prev`, `since`, `onceWithin k`; abgeleitet `once`, `hist`, `histWithin`.
+Sprache: `atom`, `lag k` (Atom über der Beobachtung vor k Ticks und der aktuellen), `neg`, `conj`, `prev`, `since`, `onceWithin k`, `countWithin k n`; abgeleitet `step` (= `lag 1`), `once`, `hist`, `histWithin`. Die Semantik ist strukturell über die Formel definiert, mit einer Semantikfunktion je Operator.
 
-Muster-Schemata in `Patterns.lean`: `invariant`, `aliveWithin`, `respondsWithin`, `notLongerThan`, `stepBounded`, `backedBy`. Beispiele mit ausführbaren Prüfungen in `Examples.lean`.
+Muster-Schemata in `Patterns.lean`: `invariant`, `aliveWithin`, `respondsWithin`, `notLongerThan`, `stepBounded`, `driftBounded`, `atLeastWithin`, `atMostWithin`, `backedBy`. Beispiele mit ausführbaren Prüfungen in `Examples.lean`.
 
 Noch offen im Lean-Projekt:
 
@@ -107,6 +107,10 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 | Mathlib | nein, nur Lean-Standardbibliothek | schneller Build, stabil, kleines Artefakt |
 | Versionierung | Git-Repository `AImotion-Bavaria/contract-monitors` (privat), lokal außerhalb von OneDrive geklont; OneDrive als Ablage für PDFs | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
 | Arbeitsweise | alle Änderungen direkt auf `main` | ein Autor, ein Stand; kein Umschalten zwischen Branches |
+
+### Spracherweiterung nach dem RQ1-Katalog (22.11.2026)
+
+- Zählen im Fenster und Vergleich über k Ticks sind ergänzt, weil der Katalog beide Lücken zeigte. Aussagen je Objekt bleiben außerhalb und sind als Grenze benannt.
 
 ### Abschnitt 5 (22.11.2026)
 

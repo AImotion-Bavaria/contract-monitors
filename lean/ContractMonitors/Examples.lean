@@ -76,6 +76,29 @@ def notFrozen : Fml Obs :=
 #guard verdict notFrozen [output 5, output 5, output 5, output 5] == false
 #guard verdict notFrozen [output 5, output 5, output 6, output 6, output 6]
 
+/-- Bounded drift: over three ticks the object count changes by at most
+three. -/
+def drift : Fml Obs :=
+  Fml.driftBounded 3 fun a b => b.count ≤ a.count + 3 && a.count ≤ b.count + 3
+
+#guard verdict drift [output 5, output 6, output 7]
+#guard verdict drift [output 5, output 6, output 7, output 8]
+#guard verdict drift [output 5, output 6, output 7, output 9] == false
+
+/-- Rate: at least two outputs in every window of four ticks. -/
+def rate : Fml Obs := Fml.atLeastWithin 3 2 (.atom (·.out))
+
+#guard verdict rate [output, idle, idle]
+#guard verdict rate [output, idle, output, idle]
+#guard verdict rate [output, idle, idle, idle] == false
+#guard verdict rate [output, idle, output, idle, idle, idle] == false
+
+/-- Bounded rate: at most two outputs in every window of three ticks. -/
+def burst : Fml Obs := Fml.atMostWithin 2 2 (.atom (·.out))
+
+#guard verdict burst [output, output, idle, output]
+#guard verdict burst [output, output, output] == false
+
 /-- Provenance: an output is backed by an input within the last two ticks. -/
 def provenance : Fml Obs := Fml.backedBy 2 (.atom (·.out)) (.atom (·.inp))
 

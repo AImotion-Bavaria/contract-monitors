@@ -48,7 +48,20 @@ def notLongerThan (k : Nat) (bad : Fml σ) : Fml σ := .neg (sustained k bad)
 
 /-- **Bounded step.** From the second tick on, consecutive observations are
 related by `q`. -/
-def stepBounded (q : σ → σ → Bool) : Fml σ := impl (.prev tt) (.step q)
+def stepBounded (q : σ → σ → Bool) : Fml σ := impl (.prev tt) (step q)
+
+/-- **Bounded drift.** From tick `k + 1` on, the current observation and
+the one `k` ticks ago are related by `q`. -/
+def driftBounded (k : Nat) (q : σ → σ → Bool) : Fml σ := impl (prevN k tt) (.lag k q)
+
+/-- **Rate.** `φ` holds at least `n` times in every window of `k + 1` ticks,
+checked once `k` ticks have elapsed. -/
+def atLeastWithin (k n : Nat) (φ : Fml σ) : Fml σ :=
+  impl (prevN k tt) (.countWithin k n φ)
+
+/-- **Bounded rate.** `φ` holds at most `n` times in every window of `k + 1`
+ticks. -/
+def atMostWithin (k n : Nat) (φ : Fml σ) : Fml σ := .neg (.countWithin k (n + 1) φ)
 
 /-- **Provenance.** Whenever `out` holds, `src` held within the last `k`
 ticks. -/

@@ -56,31 +56,33 @@ Composition generalises to contracts $C_i = \ctr{A_i}{G_i}$, $i \in \{1, \dots, 
 
 \noindent A monitorable contract fixes which channels a monitor has to observe: the input channels for the assumption, and the channels of the syntactic interface for the guarantee.
 
-\paragraph{Contract Language.} We specify prefix predicates in a past-time temporal language with bounded time windows. Let $v_t$ denote the valuation of the observed channels in interval~$t$. An \emph{atom} $p$ is a decidable predicate on a single valuation; a \emph{step atom} $q$ is a decidable predicate on two consecutive valuations. Formulae are given by
+\paragraph{Contract Language.} We specify prefix predicates in a past-time temporal language with bounded time windows. Let $v_t$ denote the valuation of the observed channels in interval~$t$. An \emph{atom} $p$ is a decidable predicate on a single valuation; a \emph{step atom} $q_k$ with lag $k \geq 1$ is a decidable predicate on the valuations of the intervals $t-k$ and $t$. We write $q$ for $q_1$. Formulae are given by
 \[
-  \varphi \;::=\; p \;\mid\; q \;\mid\; \lnot\varphi \;\mid\; \varphi \land \varphi \;\mid\; \Yop\varphi \;\mid\; \varphi \Sop \varphi \;\mid\; \Owin{k}\varphi \qquad (k \in \nat).
+  \varphi \;::=\; p \;\mid\; q_k \;\mid\; \lnot\varphi \;\mid\; \varphi \land \varphi \;\mid\; \Yop\varphi \;\mid\; \varphi \Sop \varphi \;\mid\; \Owin{k}\varphi \;\mid\; \Cwin{k}{n}\varphi \qquad (k, n \in \nat).
 \]
 
 \begin{definition}[Semantics]\label{def:semantics}
   Let $x$ be a channel history and $t \in \natp$. The relation $x, t \sat \varphi$ is defined by
   \begin{align*}
     x, t &\sat p &&\iff p(v_t)\\
-    x, t &\sat q &&\iff t > 1 \land q(v_{t-1}, v_t)\\
+    x, t &\sat q_k &&\iff t > k \land q_k(v_{t-k}, v_t)\\
     x, t &\sat \lnot\varphi &&\iff x, t \not\sat \varphi\\
     x, t &\sat \varphi \land \psi &&\iff x, t \sat \varphi \land x, t \sat \psi\\
     x, t &\sat \Yop\varphi &&\iff t > 1 \land x, t-1 \sat \varphi\\
     x, t &\sat \varphi \Sop \psi &&\iff \exists t' \leq t\colon
       x, t' \sat \psi \land \forall t'' \in (t', t]\colon x, t'' \sat \varphi\\
     x, t &\sat \Owin{k}\varphi &&\iff \exists t' \in [\max(1, t-k), t]\colon
-      x, t' \sat \varphi
+      x, t' \sat \varphi\\
+    x, t &\sat \Cwin{k}{n}\varphi &&\iff \lvert\{t' \in [\max(1, t-k), t] \mid
+      x, t' \sat \varphi\}\rvert \geq n
   \end{align*}
   A formula $\varphi$ denotes the prefix predicate that holds for $\pre{x}{t}$ if $t = 0$ or $x, t \sat \varphi$.
 \end{definition}
 
-\noindent Since the truth of a formula in interval~$t$ depends on the intervals up to $t$ only, every formula is decided on the observed prefix, \ie, without delay. We use the usual abbreviations $\varphi \implies \psi$, $\Oop\varphi \equiv \true \Sop \varphi$, $\Hop\varphi \equiv \lnot\Oop\lnot\varphi$, $\Hwin{k}\varphi \equiv \lnot\Owin{k}\lnot\varphi$, and $\Yop^k$ for the $k$-fold application of~$\Yop$. Quantities that cannot be expressed in the language, \eg, aggregates over sliding windows, enter a contract as atoms over signals computed outside the monitor.
+\noindent Since the truth of a formula in interval~$t$ depends on the intervals up to $t$ only, every formula is decided on the observed prefix, \ie, without delay. We use the usual abbreviations $\varphi \implies \psi$, $\Oop\varphi \equiv \true \Sop \varphi$, $\Hop\varphi \equiv \lnot\Oop\lnot\varphi$, $\Hwin{k}\varphi \equiv \lnot\Owin{k}\lnot\varphi$, and $\Yop^k$ for the $k$-fold application of~$\Yop$. Quantities that cannot be expressed in the language, \eg, means or correlations over sliding windows, enter a contract as atoms over signals computed outside the monitor.
 
 \subsection{Contract Patterns for Perception}\label{sec:patterns}
-Table~\ref{tab:patterns} lists six formula schemata and the monitoring needs of a perception pipeline they cover. Assumptions (A) constrain the environment of a component, guarantees (G) the component itself. The guard $\Yop^k\true$ holds once $k$ intervals have elapsed and prevents alarms before a window is filled.
+Table~\ref{tab:patterns} lists eight formula schemata and the monitoring needs of a perception pipeline they cover. Assumptions (A) constrain the environment of a component, guarantees (G) the component itself. The guard $\Yop^k\true$ holds once $k$ intervals have elapsed and prevents alarms before a window is filled.
 
 \begin{table}[t]
   \caption{Contract patterns and their instances for perception components.}
@@ -104,6 +106,10 @@ Table~\ref{tab:patterns} lists six formula schemata and the monitoring needs of 
       sustained low confidence (G), frozen output (G)\\
     Bounded step & $\Yop\true \implies q$ &
       temporal consistency of count and position (G)\\
+    Bounded drift & $\Yop^k\true \implies q_k$ &
+      temporal consistency over several intervals (G)\\
+    Rate & $\Yop^k\true \implies \Cwin{k}{n}\,\mathit{msg}$ &
+      minimum rate of inputs (A) and outputs (G)\\
     Provenance & $\mathit{out} \implies \Owin{k}\,\mathit{src}$ &
       tracked objects stem from detections (G)\\
     \bottomrule

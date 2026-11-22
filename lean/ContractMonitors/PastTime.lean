@@ -8,8 +8,9 @@ They are evaluated at the last position of a prefix, so every formula denotes
 a prefix predicate and is monitorable without delay.
 
 `synth` translates a formula into a state machine whose state consists of one
-Boolean per temporal operator, one counter, bounded by the window length,
-per bounded operator, and one stored observation per step atom. `synthMonitor_correct` states that its verdict
+Boolean per `prev` and `since`, one counter bounded by the window length per
+`onceWithin`, `k` Booleans per `countWithin k`, and `k` stored observations
+per `lag k`. `synthMonitor_correct` states that its verdict
 coincides with the semantics on every prefix.
 -/
 
@@ -18,8 +19,9 @@ namespace ContractMonitors
 /-- Past-time formulas with bounded windows. -/
 inductive Fml (σ : Type) where
   | atom (p : σ → Bool)
-  /-- `step q`: `q` relates the previous and the current observation. -/
-  | step (q : σ → σ → Bool)
+  /-- `lag k q`: `q` relates the observation `k` ticks ago and the current
+  one. -/
+  | lag (k : Nat) (q : σ → σ → Bool)
   | neg (φ : Fml σ)
   | conj (φ ψ : Fml σ)
   /-- `prev φ`: `φ` held one tick ago. -/
@@ -28,31 +30,71 @@ inductive Fml (σ : Type) where
   | since (φ ψ : Fml σ)
   /-- `onceWithin k φ`: `φ` held now or at one of the last `k` ticks. -/
   | onceWithin (k : Nat) (φ : Fml σ)
+  /-- `countWithin k n φ`: `φ` held at least `n` times now and during the
+  last `k` ticks. -/
+  | countWithin (k n : Nat) (φ : Fml σ)
 
 variable {σ : Type}
+
+/-! ## Semantics
+
+Histories are given newest first. Each temporal operator has a semantic
+function over the truth functions of its operands. -/
+
+/-- `q` relates the observation `k` positions back and the newest one. -/
+def lagSpec (k : Nat) (q : σ → σ → Bool) : List σ → Bool
+  | [] => false
+  | s :: rest =>
+    match (s :: rest)[k]? with
+    | some y => q y s
+    | none => false
+
+/-- `g` held at some position and `f` at all positions since. -/
+def sinceSpec (f g : List σ → Bool) : List σ → Bool
+  | [] => false
+  | s :: rest => g (s :: rest) || (f (s :: rest) && sinceSpec f g rest)
+
+/-- `f` held at the newest position or one of the `k` before. -/
+def withinSpec (f : List σ → Bool) : Nat → List σ → Bool
+  | _, [] => false
+  | 0, x :: rest => f (x :: rest)
+  | j + 1, x :: rest => f (x :: rest) || withinSpec f j rest
+
+/-- The truth values of `f` at all positions, newest first. -/
+def vals (f : List σ → Bool) : List σ → List Bool
+  | [] => []
+  | s :: rest => f (s :: rest) :: vals f rest
+
+/-- `f` held at least `n` times at the newest position and the `k` before. -/
+def countSpec (k n : Nat) (f : List σ → Bool) : List σ → Bool
+  | [] => false
+  | s :: rest => decide (n ≤ ((vals f (s :: rest)).take (k + 1)).count true)
 
 namespace Fml
 
 /-- Truth at the most recent observation of a history given newest first. -/
 def holdsRev : Fml σ → List σ → Bool
-  | _, [] => false
-  | .atom p, s :: _ => p s
-  | .step _, [_] => false
-  | .step q, s :: s' :: _ => q s' s
-  | .neg φ, s :: rest => !(φ.holdsRev (s :: rest))
-  | .conj φ ψ, s :: rest => φ.holdsRev (s :: rest) && ψ.holdsRev (s :: rest)
-  | .prev φ, _ :: rest => φ.holdsRev rest
-  | .since φ ψ, s :: rest =>
-      ψ.holdsRev (s :: rest) ||
-        (φ.holdsRev (s :: rest) && (Fml.since φ ψ).holdsRev rest)
-  | .onceWithin 0 φ, s :: rest => φ.holdsRev (s :: rest)
-  | .onceWithin (k + 1) φ, s :: rest =>
-      φ.holdsRev (s :: rest) || (Fml.onceWithin k φ).holdsRev rest
-termination_by φ l => (φ, l.length)
+  | .atom p => fun l => match l with
+    | [] => false
+    | s :: _ => p s
+  | .lag k q => lagSpec k q
+  | .neg φ => fun l => match l with
+    | [] => false
+    | _ :: _ => !(φ.holdsRev l)
+  | .conj φ ψ => fun l => φ.holdsRev l && ψ.holdsRev l
+  | .prev φ => fun l => match l with
+    | [] => false
+    | _ :: rest => φ.holdsRev rest
+  | .since φ ψ => sinceSpec φ.holdsRev ψ.holdsRev
+  | .onceWithin k φ => withinSpec φ.holdsRev k
+  | .countWithin k n φ => countSpec k n φ.holdsRev
 
 /-- The prefix predicate denoted by a formula. The empty prefix is fine. -/
 def holds (φ : Fml σ) (pre : Prefix σ) : Bool :=
   pre.isEmpty || φ.holdsRev pre.reverse
+
+/-- `step q`: `q` relates the previous and the current observation. -/
+def step (q : σ → σ → Bool) : Fml σ := .lag 1 q
 
 /-- `once φ`: `φ` held at some past tick (including now). -/
 def once (φ : Fml σ) : Fml σ := .since (.atom fun _ => true) φ
@@ -64,18 +106,6 @@ def hist (φ : Fml σ) : Fml σ := .neg (once (.neg φ))
 def histWithin (k : Nat) (φ : Fml σ) : Fml σ := .neg (.onceWithin k (.neg φ))
 
 end Fml
-
-/-- Semantics of a bounded window over an arbitrary truth function. -/
-def withinSpec (f : List σ → Bool) : Nat → List σ → Bool
-  | _, [] => false
-  | 0, x :: rest => f (x :: rest)
-  | j + 1, x :: rest => f (x :: rest) || withinSpec f j rest
-
-theorem Fml.holdsRev_onceWithin (φ : Fml σ) (k : Nat) (l : List σ) :
-    (Fml.onceWithin k φ).holdsRev l = withinSpec φ.holdsRev k l := by
-  induction k generalizing l with
-  | zero => cases l <;> simp [Fml.holdsRev, withinSpec]
-  | succ k ih => cases l <;> simp [Fml.holdsRev, withinSpec, ih]
 
 /-! ## State machines -/
 
@@ -102,11 +132,15 @@ def atom (p : σ → Bool) : Machine σ where
   init := ()
   step := fun _ x => ((), p x)
 
-/-- Stores the previous observation. -/
-def step2 (q : σ → σ → Bool) : Machine σ where
-  State := Option σ
-  init := none
-  step := fun s x => (some x, match s with | none => false | some y => q y x)
+/-- Stores the last `k` observations, newest first. -/
+def lag (k : Nat) (q : σ → σ → Bool) : Machine σ where
+  State := List σ
+  init := []
+  step := fun buf x =>
+    ((x :: buf).take k,
+      match (x :: buf)[k]? with
+      | some y => q y x
+      | none => false)
 
 def neg (m : Machine σ) : Machine σ where
   State := m.State
@@ -136,6 +170,14 @@ def since (m n : Machine σ) : Machine σ where
 /-- Counter update: ticks since `m` last emitted `true`, saturating at `k + 1`. -/
 def tick (k : Nat) (hit : Bool) (c : Nat) : Nat :=
   if hit then 0 else min (c + 1) (k + 1)
+
+/-- Stores the last `k` outputs of `m`, newest first. -/
+def count (k n : Nat) (m : Machine σ) : Machine σ where
+  State := m.State × List Bool
+  init := (m.init, [])
+  step := fun s x =>
+    (((m.step s.1 x).1, ((m.step s.1 x).2 :: s.2).take k),
+      decide (n ≤ ((m.step s.1 x).2 :: s.2).count true))
 
 /-- Counts the ticks since `m` last emitted `true`. -/
 def within (k : Nat) (m : Machine σ) : Machine σ where
@@ -248,6 +290,111 @@ theorem outRev_within (k : Nat) (m : Machine σ) (l : List σ) :
     rw [outRev_within_cons, Bool.eq_iff_iff, decide_eq_true_iff]
     exact ctr_le_iff k m.outRev (x :: rest) k (Nat.le_refl k)
 
+theorem take_cons_take {α : Type} (x : α) (l : List α) (k : Nat) :
+    (x :: l.take k).take k = (x :: l).take k := by
+  cases k with
+  | zero => rfl
+  | succ j => simp [List.take_take]
+
+theorem stateRev_lag (k : Nat) (q : σ → σ → Bool) (l : List σ) :
+    (lag k q).stateRev l = l.take k := by
+  induction l with
+  | nil => simp [stateRev, lag]
+  | cons x rest ih =>
+    show (x :: (lag k q).stateRev rest).take k = _
+    rw [ih, take_cons_take]
+
+/-- **Bounded memory.** A lag atom stores at most `k` observations. -/
+theorem lag_buffer_le (k : Nat) (q : σ → σ → Bool) (l : List σ) :
+    ((lag k q).stateRev l : List σ).length ≤ k := by
+  rw [stateRev_lag]; exact List.length_take_le k l
+
+theorem stateRev_count (k n : Nat) (m : Machine σ) (l : List σ) :
+    (count k n m).stateRev l = (m.stateRev l, (vals m.outRev l).take k) := by
+  induction l with
+  | nil => simp [stateRev, count, vals]
+  | cons x rest ih =>
+    show ((m.step ((count k n m).stateRev rest).1 x).1,
+        ((m.step ((count k n m).stateRev rest).1 x).2 ::
+          ((count k n m).stateRev rest).2).take k) = _
+    rw [ih]
+    show (_, (m.outRev (x :: rest) :: (vals m.outRev rest).take k).take k) = _
+    rw [take_cons_take]; rfl
+
+/-- **Bounded memory.** A counting operator stores at most `k` bits. -/
+theorem count_buffer_le (k n : Nat) (m : Machine σ) (l : List σ) :
+    ((count k n m).stateRev l).2.length ≤ k := by
+  rw [stateRev_count]; exact List.length_take_le k _
+
+/-! ### Outputs as functions of the history -/
+
+theorem outRev_atom (p : σ → Bool) :
+    (atom p).outRev = fun l => match l with
+      | [] => false
+      | s :: _ => p s := by
+  funext l; cases l <;> rfl
+
+theorem outRev_lag (k : Nat) (q : σ → σ → Bool) : (lag k q).outRev = lagSpec k q := by
+  funext l
+  cases l with
+  | nil => rfl
+  | cons x rest =>
+    show (match (x :: (lag k q).stateRev rest)[k]? with
+      | some y => q y x
+      | none => false) = lagSpec k q (x :: rest)
+    rw [stateRev_lag]
+    have : (x :: rest.take k)[k]? = (x :: rest)[k]? := by
+      cases k with
+      | zero => rfl
+      | succ j => simp
+    rw [this]; rfl
+
+theorem outRev_neg (m : Machine σ) :
+    (neg m).outRev = fun l => match l with
+      | [] => false
+      | _ :: _ => !(m.outRev l) := by
+  funext l
+  cases l with
+  | nil => rfl
+  | cons x rest => exact outRev_neg_cons m x rest
+
+theorem outRev_conj (m n : Machine σ) :
+    (conj m n).outRev = fun l => m.outRev l && n.outRev l := by
+  funext l
+  cases l with
+  | nil => rfl
+  | cons x rest => exact outRev_conj_cons m n x rest
+
+theorem outRev_prev (m : Machine σ) :
+    (prev m).outRev = fun l => match l with
+      | [] => false
+      | _ :: rest => m.outRev rest := by
+  funext l
+  cases l with
+  | nil => rfl
+  | cons x rest => exact outRev_prev_cons m x rest
+
+theorem outRev_since (m n : Machine σ) :
+    (since m n).outRev = sinceSpec m.outRev n.outRev := by
+  funext l
+  induction l with
+  | nil => rfl
+  | cons x rest ih => rw [outRev_since_cons, ih]; rfl
+
+theorem outRev_within' (k : Nat) (m : Machine σ) :
+    (within k m).outRev = withinSpec m.outRev k :=
+  funext (outRev_within k m)
+
+theorem outRev_count (k n : Nat) (m : Machine σ) :
+    (count k n m).outRev = countSpec k n m.outRev := by
+  funext l
+  cases l with
+  | nil => rfl
+  | cons x rest =>
+    show decide (n ≤ ((m.step ((count k n m).stateRev rest).1 x).2 ::
+        ((count k n m).stateRev rest).2).count true) = _
+    rw [stateRev_count]; rfl
+
 /-- Wrap a machine as a monitor: the verdict is the last output, and `true`
 before the first observation. -/
 def toMonitor (m : Machine σ) : Monitor σ where
@@ -271,53 +418,36 @@ end Machine
 /-- **Monitor synthesis.** One combinator per operator. -/
 def synth : Fml σ → Machine σ
   | .atom p => Machine.atom p
-  | .step q => Machine.step2 q
+  | .lag k q => Machine.lag k q
   | .neg φ => Machine.neg (synth φ)
   | .conj φ ψ => Machine.conj (synth φ) (synth ψ)
   | .prev φ => Machine.prev (synth φ)
   | .since φ ψ => Machine.since (synth φ) (synth ψ)
   | .onceWithin k φ => Machine.within k (synth φ)
+  | .countWithin k n φ => Machine.count k n (synth φ)
 
-theorem synth_outRev (φ : Fml σ) : ∀ l, (synth φ).outRev l = φ.holdsRev l := by
+theorem synth_outRev (φ : Fml σ) : (synth φ).outRev = φ.holdsRev := by
   induction φ with
-  | atom p =>
-    intro l; cases l <;> simp [synth, Machine.atom, Machine.outRev, Fml.holdsRev]
-  | step q =>
-    intro l
-    cases l with
-    | nil => simp [Machine.outRev, Fml.holdsRev]
-    | cons x rest =>
-      cases rest <;>
-        simp [synth, Machine.step2, Machine.outRev, Machine.stateRev, Fml.holdsRev]
+  | atom p => exact Machine.outRev_atom p
+  | lag k q => exact Machine.outRev_lag k q
   | neg φ ih =>
-    intro l
-    cases l with
-    | nil => simp [Machine.outRev, Fml.holdsRev]
-    | cons x rest => simp [synth, Machine.outRev_neg_cons, ih, Fml.holdsRev]
+    show (Machine.neg (synth φ)).outRev = _
+    rw [Machine.outRev_neg, ih]; rfl
   | conj φ ψ ihφ ihψ =>
-    intro l
-    cases l with
-    | nil => simp [Machine.outRev, Fml.holdsRev]
-    | cons x rest => simp [synth, Machine.outRev_conj_cons, ihφ, ihψ, Fml.holdsRev]
+    show (Machine.conj (synth φ) (synth ψ)).outRev = _
+    rw [Machine.outRev_conj, ihφ, ihψ]; rfl
   | prev φ ih =>
-    intro l
-    cases l with
-    | nil => simp [Machine.outRev, Fml.holdsRev]
-    | cons x rest => simp [synth, Machine.outRev_prev_cons, ih, Fml.holdsRev]
+    show (Machine.prev (synth φ)).outRev = _
+    rw [Machine.outRev_prev, ih]; rfl
   | since φ ψ ihφ ihψ =>
-    intro l
-    induction l with
-    | nil => simp [Machine.outRev, Fml.holdsRev]
-    | cons x rest ihl =>
-      have h := Machine.outRev_since_cons (synth φ) (synth ψ) x rest
-      simp only [synth] at ihl ⊢
-      rw [h, ihl, ihφ, ihψ]
-      simp [Fml.holdsRev]
+    show (Machine.since (synth φ) (synth ψ)).outRev = _
+    rw [Machine.outRev_since, ihφ, ihψ]; rfl
   | onceWithin k φ ih =>
-    intro l
-    have hf : (synth φ).outRev = φ.holdsRev := funext ih
-    simp only [synth]
-    rw [Machine.outRev_within, hf, Fml.holdsRev_onceWithin]
+    show (Machine.within k (synth φ)).outRev = _
+    rw [Machine.outRev_within', ih]; rfl
+  | countWithin k n φ ih =>
+    show (Machine.count k n (synth φ)).outRev = _
+    rw [Machine.outRev_count, ih]; rfl
 
 /-- The monitor synthesised from a formula. -/
 def synthMonitor (φ : Fml σ) : Monitor σ := (synth φ).toMonitor
