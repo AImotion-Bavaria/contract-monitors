@@ -33,7 +33,7 @@ environment.
   A \emph{contract} for the syntactic interface $\iface{I}{O}$ is a pair
   $C = \ctr{A}{G}$ of predicates, where the \emph{assumption}
   $A \subseteq \chan{I}$ constrains the input histories and the
-  \emph{guarantee} $G \subseteq \chan{I \cup O}$ relates input and output
+  \emph{guarantee} $G \subseteq \chan{I} \cup \chan{O}$ relates input and output
   histories.
 \end{definition}
 
@@ -52,7 +52,7 @@ Sect.~\ref{sec:compositional}).
 
 \paragraph{Refinement and Composition.}
 Refinement relates the contracts of adjacent levels of the architecture,
-e.\,g., the contract of a system and the contracts of its components.
+\eg, the contract of a system and the contracts of its components.
 
 \begin{definition}[Refinement]\label{def:refinement}
   A contract $C' = \ctr{A'}{G'}$ \emph{refines} a contract
@@ -149,13 +149,13 @@ consecutive valuations. Formulae are given by
 
 \noindent
 Since the truth of a formula in interval~$t$ depends on the intervals up to
-$t$ only, every formula is decided on the observed prefix, i.\,e., without
+$t$ only, every formula is decided on the observed prefix, \ie, without
 delay. We use the usual abbreviations $\varphi \implies \psi$,
 $\Oop\varphi \equiv \true \Sop \varphi$,
 $\Hop\varphi \equiv \lnot\Oop\lnot\varphi$,
 $\Hwin{k}\varphi \equiv \lnot\Owin{k}\lnot\varphi$, and $\Yop^k$ for the
 $k$-fold application of~$\Yop$. Quantities that cannot be expressed in the
-language, e.\,g., aggregates over sliding windows, enter a contract as atoms
+language, \eg, aggregates over sliding windows, enter a contract as atoms
 over signals computed outside the monitor.
 
 \subsection{Contract Patterns for Perception}\label{sec:patterns}
