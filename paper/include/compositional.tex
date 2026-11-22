@@ -52,7 +52,16 @@ The refinement proof of the example is correct but worthless: it rests on a comp
 \end{theorem}
 
 \noindent
-Extendability is a design-time obligation on the contracts, not on the monitors. It demands that the assumption of the system and the guarantees of the components can be upheld jointly from every situation in which they have been upheld so far, \ie, that the contracts do not paint the components into a corner. Example~\ref{ex:counterexample} shows that the condition cannot be dropped. \todo{Sufficient, checkable criterion for extendability of pattern instances.}
+Extendability is a design-time obligation on the contracts, not on the monitors. It demands that the assumption of the system and the guarantees of the components can be upheld jointly from every situation in which they have been upheld so far, \ie, that the contracts do not paint the components into a corner. Example~\ref{ex:counterexample} shows that the condition cannot be dropped.
+
+Although extendability quantifies over infinite channel histories, it is a property of finite prefixes. We say that a prefix predicate $p$ has a \emph{dead end} if there is a finite prefix $w$ with $\upto{p}(w)$ such that $p(w\,v)$ holds for no valuation $v$.
+
+\begin{theorem}[Extendability and Dead Ends]\label{thm:deadend}
+  A prefix predicate is extendable if and only if it has no dead end.
+\end{theorem}
+
+\noindent
+For a monitor $m$ that is correct for $p$, this reads: $p$ is extendable if and only if, after every run of $m$ without alarm, there is a valuation for which $m$ raises no alarm. Extendability of $a \land \bigwedge_i g_i$ is thereby reduced to a reachability question on the monitors synthesised in Sect.~\ref{sec:synthesis}, running side by side (Lemma~\ref{lem:central}). \todo{Decide whether to automate this check for pattern instances or to leave it as future work.}
 
 \paragraph{Blame.}
 If a monitor raises an alarm, the separation of assumption and guarantee tells who is responsible. We say that a component $s_i$ satisfies its monitorable contract \emph{stagewise} if, for every behaviour $x$ of $s_i$ and every $t \in \nat$, $\upto{a_i}(\pre{x}{t})$ implies $g_i(\pre{x}{t})$; stagewise satisfaction implies satisfaction in the sense of Def.~\ref{def:satisfaction}.

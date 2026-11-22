@@ -53,6 +53,7 @@ Das Projekt baut mit Lean 4.35.0 ohne Mathlib und enthält kein `sorry`.
 | T3 | Verfeinerungserhalt, Präfix-Version mit Erweiterbarkeit | `system_guarantee_on_prefix` | bewiesen |
 | T3 | beide Versionen für beliebig viele Komponenten | `compFamily_mono`, `system_guarantee_of_no_alarm_family`, `system_guarantee_on_prefix_family` | bewiesen |
 | T3 | Erweiterbarkeit ist notwendig (Gegenbeispiel) | `Counterexample.extendability_needed` | bewiesen |
+| T3 | Erweiterbarkeit ⇔ keine Sackgasse; Prüfung am Monitor | `extendable_iff_noDeadEnd`, `Monitor.Correct.extendable` | bewiesen |
 | T4 | Schuldzuweisung | `no_false_blame`, `component_at_fault` | bewiesen |
 | Lokalität | Monitor sieht nur die Kanäle der Schnittstelle | `Correct.localTo`, `IContract.*_local` | bewiesen |
 
@@ -64,7 +65,7 @@ Noch offen im Lean-Projekt:
 
 - Komposition läuft über die globale Kanalbelegung; Verträglichkeit der Schnittstellen (disjunkte Ausgänge, Verschaltung) ist nicht modelliert.
 - Dass eine Formel nur die Kanäle beobachtet, die ihre Atome lesen (`Observes` für `Fml`), ist nicht bewiesen; `IContract` verlangt die Eigenschaft bisher als Voraussetzung.
-- Erweiterbarkeit ist Voraussetzung des Präfix-Satzes; ein hinreichendes, prüfbares Kriterium fehlt.
+- Erweiterbarkeit ist auf Sackgassenfreiheit endlicher Präfixe zurückgeführt; eine automatische Prüfung für konkrete Muster-Instanzen (Erreichbarkeitsanalyse auf dem Produkt der Monitore) gibt es noch nicht.
 - Anbindung des kompilierten Monitors an ROS 2 ist nicht erprobt.
 
 Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts bezieht sich auf Ausgänge, Definition 1 beschränkt Annahmen auf Eingänge.
