@@ -1,2 +1,6 @@
 \section{Conclusion}\label{sec:conclusion}
-\todo{To be written.}
+% Draft; the evaluation sentence is open.
+
+We presented a theory of compositional runtime monitoring for architectures whose components are specified by assume/guarantee contracts. Monitors are synthesised from a contract language that is decidable on finite observations with bounded memory, and their placement follows from the contract hierarchy. We proved that the monitors are correct, that the monitors of the components safeguard the contract of the system if the contracts are refined and extendable, that extendability cannot be dropped, and that separate assumption and guarantee monitors attribute a violation to the responsible party. All results are mechanised in Lean~4, and the verified monitors are the executed ones. \todo{One sentence on the evaluation results.}
+
+Future work will address three directions: an automated check of extendability for contracts built from the patterns, an extension of the language by quantification over data to express properties of individual objects, and contracts at the level of systems of systems, to which the theory applies without change but which raise the question of how monitors of independently operated systems are coordinated.
