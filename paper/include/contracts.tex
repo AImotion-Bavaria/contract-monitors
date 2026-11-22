@@ -35,6 +35,9 @@ The \emph{syntactic interface} of a system is a pair $\iface{I}{O}$ of disjoint 
   Let $C_1 = \ctr{A_1}{G_1}$ and $C_2 = \ctr{A_2}{G_2}$ be contracts. Their \emph{composition} is the contract $C_1 \comp C_2 = \ctr{A}{G}$ with $G \equiv (A_1 \implies G_1) \land (A_2 \implies G_2)$ and $A \equiv (A_1 \land A_2) \lor \lnot G$.
 \end{definition}
 
+\noindent
+Composition generalises to contracts $C_i = \ctr{A_i}{G_i}$, $i \in \{1, \dots, n\}$: $\bigcomp_i C_i = \ctr{A}{G}$ with $G \equiv \bigwedge_i (A_i \implies G_i)$ and $A \equiv \bigwedge_i A_i \lor \lnot G$.
+
 \begin{theorem}[Soundness of Refinement]\label{thm:refinement}
   Refinement is reflexive and transitive. Moreover, if $C' \refines C$ and $\sys{s} \models C'$, then $\sys{s} \models C$.
 \end{theorem}
@@ -84,7 +87,7 @@ Table~\ref{tab:patterns} lists six formula schemata and the monitoring needs of 
   \label{tab:patterns}
   \centering
   \small
-  \begin{tabular}{@{}llp{6.1cm}@{}}
+  \begin{tabular}{@{}llp{5.5cm}@{}}
     \toprule
     Schema & Formula & Instances\\
     \midrule

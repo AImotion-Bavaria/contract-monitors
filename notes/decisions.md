@@ -51,6 +51,8 @@ Das Projekt baut mit Lean 4.35.0 ohne Mathlib und enthält kein `sorry`.
 | T2 | zentral = verteilt | `verdict_prod`, `Correct.prod` | bewiesen |
 | T3 | Verfeinerungserhalt, Trace-Version | `system_guarantee_of_no_component_alarm` | bewiesen |
 | T3 | Verfeinerungserhalt, Präfix-Version mit Erweiterbarkeit | `system_guarantee_on_prefix` | bewiesen |
+| T3 | beide Versionen für beliebig viele Komponenten | `compFamily_mono`, `system_guarantee_of_no_alarm_family`, `system_guarantee_on_prefix_family` | bewiesen |
+| T3 | Erweiterbarkeit ist notwendig (Gegenbeispiel) | `Counterexample.extendability_needed` | bewiesen |
 | T4 | Schuldzuweisung | `no_false_blame`, `component_at_fault` | bewiesen |
 | Lokalität | Monitor sieht nur die Kanäle der Schnittstelle | `Correct.localTo`, `IContract.*_local` | bewiesen |
 
@@ -62,8 +64,7 @@ Noch offen im Lean-Projekt:
 
 - Komposition läuft über die globale Kanalbelegung; Verträglichkeit der Schnittstellen (disjunkte Ausgänge, Verschaltung) ist nicht modelliert.
 - Dass eine Formel nur die Kanäle beobachtet, die ihre Atome lesen (`Observes` für `Fml`), ist nicht bewiesen; `IContract` verlangt die Eigenschaft bisher als Voraussetzung.
-- Erweiterbarkeit ist Voraussetzung des Präfix-Satzes; ein hinreichendes, prüfbares Kriterium und ein Gegenbeispiel für die Notwendigkeit fehlen.
-- Satz für mehr als zwei Komponenten (n-stellige Komposition).
+- Erweiterbarkeit ist Voraussetzung des Präfix-Satzes; ein hinreichendes, prüfbares Kriterium fehlt.
 - Anbindung des kompilierten Monitors an ROS 2 ist nicht erprobt.
 
 Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts bezieht sich auf Ausgänge, Definition 1 beschränkt Annahmen auf Eingänge.
@@ -105,6 +106,11 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 | Mathlib | nein, nur Lean-Standardbibliothek | schneller Build, stabil, kleines Artefakt |
 | Versionierung | Git-Repository `AImotion-Bavaria/contract-monitors` (privat), lokal außerhalb von OneDrive geklont; OneDrive als Ablage für PDFs | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
 | Arbeitsweise | alle Änderungen direkt auf `main` | ein Autor, ein Stand; kein Umschalten zwischen Branches |
+
+### Abschnitt 5 (22.11.2026)
+
+- Erweiterbarkeit steht prominent: eigene Definition, Gegenbeispiel als Example, Präfix-Satz als Hauptsatz.
+- Der Verfeinerungssatz ist für beliebig viele Komponenten formuliert und bewiesen.
 
 ### Laufendes Beispiel und Muster (22.11.2026)
 

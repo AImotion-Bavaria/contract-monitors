@@ -1,9 +1,67 @@
 \section{Compositional Monitoring}\label{sec:compositional}
-% Budget: 2.5 pages.
-\todo{Monitor placement derived from the refinement hierarchy.}
+% Budget: 2.5 pages. Mirrors lean/ContractMonitors/{Compositional,Interface,Monitor}.lean; keep both in sync.
 
-\todo{Theorem (centralised = distributed).}
+The architecture of a system determines where its contracts live: a contract $C$ at the boundary of the system $s$ and contracts $C_1, \dots, C_n$ at the boundaries of its components $s_1, \dots, s_n$. At design time, the architect establishes that the component contracts refine the system contract, \ie, $\bigcomp_i C_i \refines C$. This section answers which monitors have to be placed where, and what their silence or their alarms imply for the contract of the system. Throughout, let $C = \ctr{\always{a}}{\always{g}}$ and $C_i = \ctr{\always{a_i}}{\always{g_i}}$ be monitorable contracts.
 
-\todo{Theorem (refinement-preserving monitoring): if the composition of the component contracts refines the system contract and no component monitor raises an alarm, the system guarantee holds whenever the system assumption does. State the extendability side condition for the prefix version.}
+\begin{figure}[t]
+  \centering
+  \input{figures/placement}
+  \caption{Monitor placement derived from the contract hierarchy: one guarantee monitor $m_i$ per component, observing the channels of its interface only, and one assumption monitor $m_a$ at the inputs of the system.}
+  \label{fig:placement}
+\end{figure}
 
-\todo{Blame: separate monitors for $A$ and $G$.}
+\paragraph{Monitor Placement.}
+A contract constrains the channels of one syntactic interface only (Def.~\ref{def:monitorable}). A monitor for it therefore need not observe anything else.
+
+\begin{lemma}[Local Monitoring]\label{lem:local}
+  Let $p$ be a prefix predicate over the channels $C'$ and let $m$ be correct for $p$. Then the monitor that passes only the valuation of $C'$ to $m$ is correct for $p$.
+\end{lemma}
+
+\noindent
+Hence, the guarantee monitor of a component can be deployed next to the component and connected to its input and output channels, and the assumption monitor to its input channels (Fig.~\ref{fig:placement}). Whether the monitors run as separate units or within one central unit is a deployment decision without influence on the verdicts.
+
+\begin{lemma}[Centralised and Federated Monitoring]\label{lem:central}
+  Let $m_1$ and $m_2$ be correct for $p_1$ and $p_2$, respectively. The monitor that runs $m_1$ and $m_2$ side by side and raises an alarm if one of them does is correct for $p_1 \land p_2$.
+\end{lemma}
+
+\paragraph{Refinement-Preserving Monitoring.}
+The refinement established at design time transfers the silence of the component monitors to the contract of the system.
+
+\begin{theorem}[Refinement-Preserving Monitoring]\label{thm:rpm-trace}
+  Let $\bigcomp_i C_i \refines C$ and let $m_i$ be correct for $g_i$, for all $i \in \{1, \dots, n\}$. If no $m_i$ raises an alarm for any prefix of a channel history $x$ and $x$ satisfies the assumption $\always{a}$ of the system, then $x$ satisfies its guarantee $\always{g}$.
+\end{theorem}
+
+\noindent
+Consequently, the guarantee of the system does not have to be monitored itself; the monitors of the components suffice. This is of particular relevance if the guarantee of the system cannot be observed at a single place, or if it relates channels that are not available to a single monitor.
+
+Theorem~\ref{thm:rpm-trace} speaks about complete, infinite channel histories. At runtime, however, a verdict is needed after every finite prefix. For a prefix predicate $p$ and a finite prefix $w$, let $\upto{p}(w)$ denote that $p$ holds for $w$ and all its initial segments, \ie, that a correct monitor for $p$ has been silent so far. The apparent runtime counterpart of Theorem~\ref{thm:rpm-trace}---if $\upto{a}(w)$ and $\upto{g_i}(w)$ for all $i$, then $g(w)$---does not hold in general.
+
+\begin{example}\label{ex:counterexample}
+  Consider a system without assumption whose guarantee $g$ holds for the empty prefix only, and two components without assumptions, where $g_1$ holds for prefixes of length at most one and $g_2$ holds for every prefix. No channel history satisfies $\always{g_1}$, so $C_1 \comp C_2 \refines C$ holds vacuously. For a prefix $w$ of length one, both component monitors are silent, yet $g(w)$ is violated.
+\end{example}
+
+\noindent
+The refinement proof of the example is correct but worthless: it rests on a component guarantee that cannot be kept forever. Such a guarantee is satisfied by every finite observation up to some point, so no monitor objects, while the reasoning over infinite histories has long become void. The following condition excludes this situation.
+
+\begin{definition}[Extendability]\label{def:extendable}
+  A prefix predicate $p$ is \emph{extendable} if every finite prefix $w$ with $\upto{p}(w)$ is a prefix of a channel history $x \in \always{p}$.
+\end{definition}
+
+\begin{theorem}[Refinement-Preserving Monitoring on Prefixes]\label{thm:rpm-prefix}
+  Let $\bigcomp_i C_i \refines C$, let $m_i$ be correct for $g_i$, for all $i \in \{1, \dots, n\}$, and let $a \land \bigwedge_i g_i$ be extendable. If no $m_i$ has raised an alarm for a finite prefix $w$ or one of its initial segments and $\upto{a}(w)$, then $g(w)$.
+\end{theorem}
+
+\noindent
+Extendability is a design-time obligation on the contracts, not on the monitors. It demands that the assumption of the system and the guarantees of the components can be upheld jointly from every situation in which they have been upheld so far, \ie, that the contracts do not paint the components into a corner. Example~\ref{ex:counterexample} shows that the condition cannot be dropped. \todo{Sufficient, checkable criterion for extendability of pattern instances.}
+
+\paragraph{Blame.}
+If a monitor raises an alarm, the separation of assumption and guarantee tells who is responsible. We say that a component $s_i$ satisfies its monitorable contract \emph{stagewise} if, for every behaviour $x$ of $s_i$ and every $t \in \nat$, $\upto{a_i}(\pre{x}{t})$ implies $g_i(\pre{x}{t})$; stagewise satisfaction implies satisfaction in the sense of Def.~\ref{def:satisfaction}.
+
+\begin{theorem}[Blame]\label{thm:blame}
+  Let $m_a$ and $m_g$ be correct for $a_i$ and $g_i$, respectively, and let $x$ be a behaviour of the component $s_i$. (i)~If $s_i$ satisfies $C_i$ stagewise and $m_a$ has raised no alarm up to interval $t$, then $m_g$ raises no alarm in $t$. (ii)~If $m_g$ raises an alarm in $t$ while $m_a$ has raised no alarm up to $t$, then $s_i$ does not satisfy $C_i$ stagewise.
+\end{theorem}
+
+\noindent
+An alarm of the guarantee monitor that is not preceded by an alarm of the assumption monitor is thus evidence against the component, whereas an alarm of the assumption monitor points to the environment of the component: a preceding component, a sensor, or operation outside the operational design domain. A component that honours its contract is never blamed.
+
+All statements of this section are mechanised (cf.\ Sect.~\ref{sec:mechanisation}).

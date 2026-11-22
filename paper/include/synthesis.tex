@@ -29,9 +29,10 @@ The monitor $m_\varphi$ for a formula $\varphi$ is constructed by structural rec
   \label{tab:synthesis}
   \centering
   \small
+  \setlength{\tabcolsep}{4pt}
   \begin{tabular}{@{}llll@{}}
     \toprule
-    Operator & State (initial value) & Truth value $o$ & Update\\
+    Operator & State (initial) & Truth value $o$ & Update\\
     \midrule
     $p$ & -- & $p(v)$ & --\\
     $q$ & valuation $u$ (none) & $u \neq \text{none} \land q(u, v)$ & $u' = v$\\
@@ -39,7 +40,7 @@ The monitor $m_\varphi$ for a formula $\varphi$ is constructed by structural rec
     $\varphi \land \psi$ & -- & $o_\varphi \land o_\psi$ & --\\
     $\Yop\varphi$ & bit $b$ ($\mathit{false}$) & $b$ & $b' = o_\varphi$\\
     $\varphi \Sop \psi$ & bit $b$ ($\mathit{false}$) & $o_\psi \lor (o_\varphi \land b)$ & $b' = o$\\
-    $\Owin{k}\varphi$ & counter $c$ ($k+1$) & $c' \leq k$ & $c' = 0$ if $o_\varphi$, else $\min(c+1, k+1)$\\
+    $\Owin{k}\varphi$ & counter $c$ ($k+1$) & $c' \leq k$ & $c' = 0$ if $o_\varphi$, else $\min(c{+}1, k{+}1)$\\
     \bottomrule
   \end{tabular}
 \end{table}

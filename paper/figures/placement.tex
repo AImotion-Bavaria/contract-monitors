@@ -1,0 +1,31 @@
+% TikZ picture only; the figure environment and caption live in the
+% including file (include/compositional.tex).
+\begin{tikzpicture}[
+    comp/.style={draw, minimum width=15mm, minimum height=7mm, font=\small},
+    mon/.style={draw, fill=green!15, minimum width=9mm, minimum height=5mm, font=\footnotesize},
+    flow/.style={-{Latex[length=2mm]}},
+    obs/.style={-{Latex[length=1.5mm]}, dashed},
+  ]
+  % components and channels
+  \node[comp] (s1) at (0,0) {$s_1$};
+  \node[comp] (s2) at (3.2,0) {$s_2$};
+  \node[comp] (s3) at (6.4,0) {$s_3$};
+  \draw[flow] (-2.6,0) -- node[above, font=\footnotesize, pos=0.2] {$I$} (s1);
+  \draw[flow] (s1) -- (s2);
+  \draw[flow] (s2) -- (s3);
+  \draw[flow] (s3) -- node[above, font=\footnotesize, pos=0.8] {$O$} (9.0,0);
+  % monitors
+  \node[mon] (ma) at (-2.0,-1.3) {$m_a$};
+  \node[mon] (m1) at (0,-1.3) {$m_1$};
+  \node[mon] (m2) at (3.2,-1.3) {$m_2$};
+  \node[mon] (m3) at (6.4,-1.3) {$m_3$};
+  % observations: each monitor taps the channels of its component
+  \draw[obs] (-2.0,0) -- (ma.north);
+  \foreach \x/\m in {0/m1, 3.2/m2, 6.4/m3} {
+    \draw[obs] (\x-1.15,0) -- (\x-1.15,-0.65) -| ([xshift=-2.5mm]\m.north);
+    \draw[obs] (\x+1.15,0) -- (\x+1.15,-0.65) -| ([xshift=2.5mm]\m.north);
+  }
+  % system boundary
+  \node[draw, dotted, fit=(s1) (s3), inner xsep=4mm, inner ysep=3mm,
+        label={[font=\footnotesize]above:system $s$ with contract $C$}] {};
+\end{tikzpicture}

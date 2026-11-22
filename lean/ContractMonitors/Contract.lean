@@ -77,6 +77,25 @@ theorem comp_mono {c₁ c₁' c₂ c₂' : Contract σ} (h₁ : c₁' ≼ c₁) 
         h ⟨Gs.of_refines h₁ tr hg.1, Gs.of_refines h₂ tr hg.2⟩
   · exact ⟨Gs.of_refines h₁ tr hG.1, Gs.of_refines h₂ tr hG.2⟩
 
+/-- Parallel composition of a family of contracts. -/
+def compFamily {ι : Type} (cs : ι → Contract σ) : Contract σ where
+  A := fun tr => (∀ i, (cs i).A tr) ∨ ¬ (∀ i, (cs i).Gs tr)
+  G := fun tr => ∀ i, (cs i).Gs tr
+
+/-- Composing implementations implements the composed contract. -/
+theorem Sat.compFamily {ι : Type} {K : ι → Trace σ → Prop} {cs : ι → Contract σ}
+    (h : ∀ i, Sat (K i) (cs i)) :
+    Sat (fun tr => ∀ i, K i tr) (Contract.compFamily cs) :=
+  fun tr hk _ i => h i tr (hk i)
+
+/-- Independent implementability for families. -/
+theorem compFamily_mono {ι : Type} {cs cs' : ι → Contract σ}
+    (h : ∀ i, cs' i ≼ cs i) : compFamily cs' ≼ compFamily cs := by
+  refine ⟨fun tr hA => ?_, fun tr _ hG i => Gs.of_refines (h i) tr (hG i)⟩
+  cases hA with
+  | inl hall => exact Or.inl fun i => (h i).1 tr (hall i)
+  | inr hn => exact Or.inr fun hg => hn fun i => Gs.of_refines (h i) tr (hg i)
+
 end Contract
 
 end ContractMonitors
