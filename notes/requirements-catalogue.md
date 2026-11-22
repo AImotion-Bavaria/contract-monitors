@@ -1,6 +1,8 @@
-# Anforderungskatalog für RQ1 (Ausdrucksstärke) – erster Durchgang
+# Anforderungskatalog für RQ1 (Ausdrucksstärke) – Entwurfssatz
 
 Stand: 22.11.2026. Entwurf, noch nicht gegen alle Quellen geprüft.
+
+**Rolle dieses Katalogs:** Die 35 Einträge sind der *Entwurfssatz*. An ihnen wurde die Sprache geformt, sie taugen deshalb nicht als Messung für RQ1. Gemessen wird an einem *zurückgehaltenen Satz* aus Quellen, die beim Sprachentwurf nicht ausgewertet waren (Kandidat: ISO/PAS 8800). Regeln: Der zurückgehaltene Satz wird erst zusammengestellt und eingestuft, wenn die Sprache eingefroren ist; danach wird die Sprache nicht mehr geändert; im Paper werden beide Sätze getrennt berichtet.
 
 ## Zweck
 
@@ -92,4 +94,5 @@ Die Einträge „Signal“ betreffen durchweg Größen, die ein eigenes Modell o
 
 - Abgeleitete Einträge (Beleg **a**) an der Autoware-Dokumentation belegen oder streichen.
 - Jeden Eintrag „ja“ und „teilweise“ als Formel in Lean aufschreiben; die Einstufung gilt erst dann als gesichert.
-- Prüfen, ob ISO/PAS 8800 und weitere Quellen Anforderungen liefern, die hier fehlen.
+- Zurückgehaltenen Satz zusammenstellen (ISO/PAS 8800 und mindestens eine weitere, unabhängige Quelle), sobald die Sprache eingefroren ist.
+- Zeitpunkt des Einfrierens der Sprache festlegen.

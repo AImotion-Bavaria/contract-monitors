@@ -108,6 +108,10 @@ Offener Modellierungspunkt im Paper: Die Annahme eines komponierten Contracts be
 | Versionierung | Git-Repository `AImotion-Bavaria/contract-monitors` (privat), lokal außerhalb von OneDrive geklont; OneDrive als Ablage für PDFs | Git und OneDrive vertragen sich schlecht; anonymisierter Spiegel für die Einreichung |
 | Arbeitsweise | alle Änderungen direkt auf `main` | ein Autor, ein Stand; kein Umschalten zwischen Branches |
 
+### Messung für RQ1 (22.11.2026)
+
+- Der Katalog wird geteilt: Die 35 Einträge des ersten Durchgangs sind der Entwurfssatz, an dem die Sprache geformt wurde. Gemessen wird an einem zurückgehaltenen Satz aus Quellen, die beim Sprachentwurf nicht ausgewertet waren (Kandidat: ISO/PAS 8800). Der zurückgehaltene Satz wird erst eingestuft, wenn die Sprache eingefroren ist.
+
 ### Spracherweiterung nach dem RQ1-Katalog (22.11.2026)
 
 - Zählen im Fenster und Vergleich über k Ticks sind ergänzt, weil der Katalog beide Lücken zeigte. Aussagen je Objekt bleiben außerhalb und sind als Grenze benannt.
