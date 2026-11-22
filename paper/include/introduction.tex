@@ -1,30 +1,20 @@
 \section{Introduction}\label{sec:introduction}
 % Budget: 1.5 pages.
-\todo{Motivation: AI-based perception in automated driving; monitors as
-architectural safety mechanism; who guards the guards; where to place
-monitors.}
+\todo{Motivation: AI-based perception in automated driving; monitors as architectural safety mechanism; who guards the guards; where to place monitors.}
 
 \todo{Problem statement and gap.}
 
 \paragraph{Research Questions.}
 \begin{description}
-  \item[RQ1] What share of realistic safety requirements on a perception
-    pipeline can be expressed in the monitorable contract fragment?
-  \item[RQ2] Do component-level monitors detect violations of the
-    system-level contract, and with what delay and false-alarm rate?
-  \item[RQ3] Do separate assumption and guarantee monitors attribute a
-    violation to the correct component or to its environment?
+  \item[RQ1] What share of realistic safety requirements on a perception pipeline can be expressed in the monitorable contract fragment?
+  \item[RQ2] Do component-level monitors detect violations of the system-level contract, and with what delay and false-alarm rate?
+  \item[RQ3] Do separate assumption and guarantee monitors attribute a violation to the correct component or to its environment?
 \end{description}
 
 \paragraph{Contributions.} We provide the following contributions:
 \begin{enumerate}
-  \item[(i)] a contract framework over timed streams with refinement,
-    composition, and a prefix semantics that fixes what can be decided at
-    runtime;
-  \item[(ii)] a compositional monitor synthesis along the refinement
-    hierarchy, with mechanised proofs of monitor correctness, of the
-    equivalence of centralised and distributed monitoring, and of the
-    preservation of system-level guarantees under refinement;
+  \item[(i)] a contract framework over timed streams with refinement, composition, and a prefix semantics that fixes what can be decided at runtime;
+  \item[(ii)] a compositional monitor synthesis along the refinement hierarchy, with mechanised proofs of monitor correctness, of the equivalence of centralised and distributed monitoring, and of the preservation of system-level guarantees under refinement;
   \item[(iii)] contract patterns for AI-based perception components;
   \item[(iv)] an evaluation on a perception pipeline using fault injection.
 \end{enumerate}
