@@ -1,9 +1,65 @@
 \section{Monitor Synthesis}\label{sec:synthesis}
-% Budget: 2 pages. Mirrors lean/ContractMonitors/{Monitor,PastTime}.lean.
-\todo{Monitor as a deterministic state machine with a Boolean verdict per interval; correctness with respect to a prefix predicate.}
+% Budget: 2 pages. Mirrors lean/ContractMonitors/{Monitor,PastTime}.lean; keep both in sync.
 
-\todo{Synthesis by structural recursion over the formula: one combinator per operator; state is one Boolean per temporal operator, one counter bounded by $k+1$ per $\Owin{k}$, one stored valuation per step atom.}
+We now turn a formula of the contract language into a runtime monitor and establish that the monitor decides exactly the prefix predicate the formula denotes.
 
-\todo{Theorem (monitor correctness): the verdict coincides with Def.~\ref{def:semantics} on every prefix. Theorem (bounded memory). Mechanised.}
+\paragraph{Monitors.}
+A monitor consumes the valuation of the observed channels interval by interval and exposes a verdict after each of them.
 
-\todo{What is not monitorable in this fragment and why: unbounded future, aggregates.}
+\begin{definition}[Monitor]\label{def:monitor}
+  A \emph{monitor} over a set of channels $C$ is a tuple $m = (S, s_0, \delta, \mathit{ok})$ comprising a set of states $S$, an initial state $s_0 \in S$, a transition function $\delta$ that maps a state and a valuation of $C$ to a state, and a verdict function $\mathit{ok}\colon S \to \mathbb{B}$. For a finite prefix $w = v_1 \dots v_t$, the \emph{verdict} of $m$ is $m(w) = \mathit{ok}(\delta(\dots\delta(s_0, v_1)\dots, v_t))$. The monitor raises an \emph{alarm} for $w$ if $m(w) = \mathit{false}$.
+\end{definition}
+
+\begin{definition}[Monitor Correctness]\label{def:correct}
+  A monitor $m$ is \emph{correct} for a prefix predicate $p$ if $m(w) = p(w)$ for every finite prefix $w$.
+\end{definition}
+
+\noindent
+Correctness is two-sided: a correct monitor raises neither false alarms nor misses a violation. It links the runtime behaviour of the monitor to the property induced by $p$ (cf.\ Def.~\ref{def:monitorable}).
+
+\begin{lemma}\label{lem:silent}
+  Let $m$ be correct for $p$. Then $m$ raises no alarm for any prefix of a channel history $x$ if and only if $x \in \always{p}$.
+\end{lemma}
+
+\paragraph{Synthesis.}
+The monitor $m_\varphi$ for a formula $\varphi$ is constructed by structural recursion. Every operator contributes a fixed amount of state and computes, in each interval, its truth value $o$ from the current valuation $v$, its own state, and the truth values of its operands in the same interval (Table~\ref{tab:synthesis}). The verdict of $m_\varphi$ is the truth value computed for $\varphi$ in the most recent interval, and $\mathit{true}$ before the first interval.
+
+\begin{table}[t]
+  \caption{Synthesis: state and update per operator. $o_\varphi$ and $o_\psi$ denote the truth values of the operands in the current interval, primed variables the state after the interval.}
+  \label{tab:synthesis}
+  \centering
+  \small
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    Operator & State (initial value) & Truth value $o$ & Update\\
+    \midrule
+    $p$ & -- & $p(v)$ & --\\
+    $q$ & valuation $u$ (none) & $u \neq \text{none} \land q(u, v)$ & $u' = v$\\
+    $\lnot\varphi$ & -- & $\lnot o_\varphi$ & --\\
+    $\varphi \land \psi$ & -- & $o_\varphi \land o_\psi$ & --\\
+    $\Yop\varphi$ & bit $b$ ($\mathit{false}$) & $b$ & $b' = o_\varphi$\\
+    $\varphi \Sop \psi$ & bit $b$ ($\mathit{false}$) & $o_\psi \lor (o_\varphi \land b)$ & $b' = o$\\
+    $\Owin{k}\varphi$ & counter $c$ ($k+1$) & $c' \leq k$ & $c' = 0$ if $o_\varphi$, else $\min(c+1, k+1)$\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The counter of $\Owin{k}\varphi$ holds the number of intervals since $\varphi$ last held and saturates at $k+1$, which stands for ``not within the window''.
+
+\begin{theorem}[Correctness of Synthesis]\label{thm:synthesis}
+  For every formula $\varphi$, the monitor $m_\varphi$ is correct for the prefix predicate denoted by $\varphi$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+  By structural induction on $\varphi$, where each temporal operator requires an invariant that relates its state to the semantics of Def.~\ref{def:semantics}: after interval $t$, the bit of $\Yop\varphi$ equals the truth value of $\varphi$ in $t$, the bit of $\varphi \Sop \psi$ equals the truth value of $\varphi \Sop \psi$ in $t$, the stored valuation of a step atom is $v_t$, and the counter $c$ of $\Owin{k}\varphi$ satisfies $c \leq j \iff x, t \sat \Owin{j}\varphi$ for all $j \leq k$. The invariants are shown by induction on $t$.
+\end{proof}
+
+\begin{theorem}[Bounded Memory]\label{thm:memory}
+  The state of $m_\varphi$ consists of one bit per operator $\Yop$ and $\Sop$, one counter with values in $\{0, \dots, k+1\}$ per operator $\Owin{k}$, and one valuation per step atom. In particular, its size is independent of the length of the observed prefix.
+\end{theorem}
+
+\noindent
+Theorem~\ref{thm:synthesis} and the bound on the counters are mechanised (cf.\ Sect.~\ref{sec:mechanisation}); the remainder of Theorem~\ref{thm:memory} is immediate from the construction in Table~\ref{tab:synthesis}. Theorem~\ref{thm:synthesis} holds for every formula and hence for every instance of the patterns of Table~\ref{tab:patterns}; no pattern needs a proof of its own.
+
+\paragraph{Limits of the Fragment.}
+The language is deliberately restricted to what a monitor can decide on the observed prefix with bounded memory. Three kinds of requirements lie outside. (i)~Liveness properties, \eg, ``every request is eventually answered'', have no finite witness of violation. (ii)~Requirements with a bounded look into the future can be monitored only with a delay; we express them in their equivalent past form, as the response pattern does, which makes the delay explicit. (iii)~Aggregates over sliding windows would require arithmetic in the monitor state; they enter as atoms over signals computed outside the monitor and are thus not covered by Theorem~\ref{thm:synthesis}.
