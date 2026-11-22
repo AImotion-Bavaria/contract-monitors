@@ -17,6 +17,7 @@ Bewiesen (22.11.2026, `lean/ContractMonitors/Temporal.lean` und `Perception.lean
 
 - `Perception.refines`: Die Komposition der Contracts von Detektion, Tracking und Prädiktion verfeinert den System-Contract, für alle Werte der Schranken. Damit ist die Voraussetzung der Sätze zum verfeinerungserhaltenden Monitoring für genau die Contracts bewiesen, die das Programm `monitor` ausführt.
 - `Perception.system_guarantee_of_silent_monitors`: Trace-Version des Satzes, instanziiert für die Perzeptionskette.
+- `Perception.extendable`: Systemannahme und Komponentengarantien sind zusammen erweiterbar. Zeuge ist eine „sichere Beobachtung“ (auf jedem Kanal kommt eine geänderte Nachricht an, ohne Inhalt, den eine Schranke ablehnen könnte); nach ihr gilt jede Klausel unabhängig von der Vorgeschichte. Damit gilt auch die Präfix-Version (`Perception.system_guarantee_on_prefix`) ohne unbewiesene Voraussetzung.
 - Zwei Kettenregeln für die Muster: Antwortfenster addieren sich (`respondsWithin_chain`); eine Komponente mit Antwortfenster k reicht Lebendigkeit mit um k vergrößertem Fenster weiter (`aliveWithin_chain`).
 - Stefan hat die synthetische Kampagne im Docker-Container auf dem M1 ausgeführt und dieselbe Tabelle erhalten. Dockerfile und Stufe 1 laufen damit auf arm64.
 
@@ -32,7 +33,6 @@ Abweichungen vom Vorschlag unten:
 
 Offen:
 
-- Erweiterbarkeit (Extendability) der konkreten Perzeptions-Contracts ist nicht bewiesen. Sie ist die Nebenbedingung der Präfix-Version des Satzes; die Trace-Version braucht sie nicht.
 - Fehlerinjektion für die echte Kette: ein kleiner ROS-2-Knoten, der ein Topic umleitet und stört, auf dem Laborrechner.
 - Schranken in `experiments/configs/params.default` an die gemessenen Topic-Raten anpassen.
 

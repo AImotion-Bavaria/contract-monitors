@@ -1,4 +1,5 @@
 import ContractMonitors.Compositional
+import ContractMonitors.Extendable
 import ContractMonitors.Temporal
 
 /-!
@@ -278,5 +279,119 @@ theorem system_guarantee_of_silent_monitors (p : Params) (Ms : Comp → Monitor 
     (hA : Always (system p).A tr) :
     Always (system p).G tr :=
   system_guarantee_of_no_alarm_family (refines p) hM tr h hA
+
+/-! ## Extendability
+
+The side condition of the prefix version. It holds because there is a
+*safe observation*: a valuation after which every clause of the system
+assumption and of the component guarantees is true, whatever was observed
+before. In the safe observation a message arrives on every channel, differs
+from its predecessor, and carries no content that a bound could reject. -/
+
+/-- The safe observation. -/
+def safe : Sig :=
+  [("cloud", 1), ("cloud.changed", 1), ("det", 1), ("det.changed", 1),
+   ("trk", 1), ("trk.changed", 1), ("pred", 1), ("pred.changed", 1)]
+
+theorem impl_of_right {φ ψ : Fml Sig} {x : Sig} {l : List Sig}
+    (h : ψ.holdsRev (x :: l) = true) : (Fml.impl φ ψ).holdsRev (x :: l) = true := by
+  simp [Fml.impl, Fml.holdsRev, h]
+
+theorem within_of_now {φ : Fml Sig} (k : Nat) {x : Sig} {l : List Sig}
+    (h : φ.holdsRev (x :: l) = true) : (Fml.onceWithin k φ).holdsRev (x :: l) = true := by
+  cases k <;> simp [Fml.holdsRev, withinSpec, h]
+
+theorem alive_safe (k : Nat) {φ : Fml Sig} {x : Sig} {l : List Sig}
+    (h : φ.holdsRev (x :: l) = true) : (Fml.aliveWithin k φ).holdsRev (x :: l) = true :=
+  impl_of_right (within_of_now k h)
+
+theorem responds_safe (k : Nat) (req : Fml Sig) {φ : Fml Sig} {x : Sig} {l : List Sig}
+    (h : φ.holdsRev (x :: l) = true) :
+    (Fml.respondsWithin k req φ).holdsRev (x :: l) = true :=
+  impl_of_right (within_of_now k h)
+
+theorem backed_safe (k : Nat) (out : Fml Sig) {φ : Fml Sig} {x : Sig} {l : List Sig}
+    (h : φ.holdsRev (x :: l) = true) : (Fml.backedBy k out φ).holdsRev (x :: l) = true :=
+  impl_of_right (within_of_now k h)
+
+/-- A step bound on a signal holds when the signal is absent now. -/
+theorem step_safe (n : String) (q : Int → Int → Bool) (x : Sig) (l : List Sig)
+    (h : val n x = none) :
+    (Fml.stepBounded (stepOn n q)).holdsRev (x :: l) = true := by
+  cases l with
+  | nil => simp [Fml.stepBounded, Fml.impl, Fml.holdsRev, Fml.tt]
+  | cons y l =>
+    apply impl_of_right
+    simp [Fml.step, Fml.holdsRev, lagSpec, stepOn, h]
+
+/-- A bound on the duration of `bad` holds when `bad` is false now. -/
+theorem notLonger_safe (k : Nat) (bad : Fml Sig) (x : Sig) (l : List Sig)
+    (h : bad.holdsRev (x :: l) = false) :
+    (Fml.notLongerThan k bad).holdsRev (x :: l) = true := by
+  have : (Fml.onceWithin k (Fml.neg bad)).holdsRev (x :: l) = true :=
+    within_of_now k (by simp [Fml.holdsRev, h])
+  show (!((Fml.prevN k Fml.tt).holdsRev (x :: l) &&
+    !(Fml.onceWithin k (Fml.neg bad)).holdsRev (x :: l))) = true
+  rw [this]; simp
+
+/-- Every clause of the system assumption and of the component guarantees
+holds whenever the safe observation is the most recent one. -/
+theorem safe_holds (p : Params) (l : List Sig) (c : Clause)
+    (hc : c ∈ sysA p ++ detG p ++ trkG p ++ predG p) :
+    c.2.holdsRev (safe :: l) = true := by
+  simp only [sysA, cloudA, detG, trkG, predG, List.mem_append, List.mem_cons,
+    List.mem_nil_iff, or_false] at hc
+  rcases hc with ((((rfl | rfl | rfl) | rfl) | (rfl | rfl | rfl | rfl | rfl | rfl)) |
+    (rfl | rfl | rfl | rfl)) | (rfl | rfl | rfl | rfl)
+  -- system assumption
+  · exact alive_safe _ rfl
+  · rfl
+  · exact alive_safe _ rfl
+  · rfl
+  -- detection
+  · exact responds_safe _ _ rfl
+  · rfl
+  · exact step_safe _ _ _ _ rfl
+  · exact notLonger_safe _ _ _ _ rfl
+  · exact alive_safe _ rfl
+  · exact backed_safe _ _ rfl
+  -- tracking
+  · exact responds_safe _ _ rfl
+  · exact step_safe _ _ _ _ rfl
+  · exact alive_safe _ rfl
+  · exact backed_safe _ _ rfl
+  -- prediction
+  · exact responds_safe _ _ rfl
+  · rfl
+  · exact alive_safe _ rfl
+  · exact backed_safe _ _ rfl
+
+theorem allHold_snoc_safe (p : Params) (w : Prefix Sig) (l : List Clause)
+    (hl : ∀ c ∈ l, c ∈ sysA p ++ detG p ++ trkG p ++ predG p) :
+    allHold l (w ++ [safe]) = true := by
+  unfold allHold
+  rw [List.all_eq_true]
+  intro c hc
+  simp [Fml.holds, safe_holds p w.reverse c (hl c hc)]
+
+/-- **The perception contracts are extendable.** -/
+theorem extendable (p : Params) :
+    Extendable (fun w => (system p).A w = true ∧ ∀ i, (component p i).G w = true) := by
+  apply extendable_of_noDeadEnd
+  intro w _
+  refine ⟨safe, allHold_snoc_safe p w _ fun c hc => by simp [hc], fun i => ?_⟩
+  cases i <;> exact allHold_snoc_safe p w _ fun c hc => by simp [hc]
+
+/-- **System guarantee on a finite observation.** For the perception
+contracts: if the synthesised monitors of the component guarantees have
+been silent and the system assumption has held on the observed prefix, the
+system guarantee holds on that prefix. -/
+theorem system_guarantee_on_prefix (p : Params) (Ms : Comp → Monitor Sig)
+    (hM : ∀ i, (Ms i).Correct (component p i).G)
+    (w : Prefix Sig)
+    (h : ∀ i, HoldsUpTo (Ms i).verdict w)
+    (hA : HoldsUpTo (system p).A w) :
+    (system p).G w = true :=
+  system_guarantee_on_prefix_family (refines p) (extendable p) hM w h hA
 
 end ContractMonitors.Perception
