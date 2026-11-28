@@ -1,7 +1,7 @@
 \section{Compositional Monitoring}\label{sec:compositional}
 % Budget: 2.5 pages. Mirrors lean/ContractMonitors/{Compositional,Interface,Monitor}.lean; keep both in sync.
 
-The architecture of a system determines where its contracts live: a contract $C$ at the boundary of the system $s$ and contracts $C_1, \dots, C_n$ at the boundaries of its components $s_1, \dots, s_n$. At design time, the architect establishes that the component contracts refine the system contract, \ie, $\bigcomp_i C_i \refines C$. This section determines which monitors have to be placed where and what their silence or their alarms imply for the contract of the system. Throughout, let $C = \ctr{\always{a}}{\always{g}}$ and $C_i = \ctr{\always{a_i}}{\always{g_i}}$ be monitorable contracts.
+The architecture of a system determines where its contracts live: a contract $C$ at the boundary of the system $s$ and contracts $C_1, \dots, C_n$ at the boundaries of its components $s_1, \dots, s_n$. At design time, the architect establishes that the component contracts refine the system contract, \ie, $\bigcomp_i C_i \refines C$. This section answers which monitors have to be placed where, and what their silence or their alarms imply for the contract of the system. Throughout, let $C = \ctr{\always{a}}{\always{g}}$ and $C_i = \ctr{\always{a_i}}{\always{g_i}}$ be monitorable contracts.
 
 \begin{figure}[t]
   \centering
@@ -32,7 +32,7 @@ The refinement established at design time transfers the silence of the component
 \end{theorem}
 
 \noindent
-Consequently, the guarantee of the system does not have to be monitored itself; the monitors of the components suffice. This matters in particular if the guarantee of the system cannot be observed at a single place or relates channels that are not available to a single monitor.
+Consequently, the guarantee of the system does not have to be monitored itself; the monitors of the components suffice. This is of particular relevance if the guarantee of the system cannot be observed at a single place, or if it relates channels that are not available to a single monitor.
 
 Theorem~\ref{thm:rpm-trace} speaks about complete, infinite channel histories. At runtime, however, a verdict is needed after every finite prefix. For a prefix predicate $p$ and a finite prefix $w$, let $\upto{p}(w)$ denote that $p$ holds for $w$ and all its initial segments, \ie, that a correct monitor for $p$ has been silent so far. The apparent runtime counterpart of Theorem~\ref{thm:rpm-trace}---if $\upto{a}(w)$ and $\upto{g_i}(w)$ for all $i$, then $g(w)$---does not hold in general.
 
@@ -61,7 +61,7 @@ Although extendability quantifies over infinite channel histories, it is a prope
 \end{theorem}
 
 \noindent
-In the terminology of Kupferman and Vardi~\cite{KupfermanVardi2001}, a dead end is a bad prefix of $\always{p}$---a prefix none of whose continuations satisfies $\always{p}$---that $p$ itself does not reject. Extendability thus demands that $p$ rejects every bad prefix as early as possible. Monitors for temporal logics over infinite words establish this property by construction~\cite{BauerLeuckerSchallhart2011}; the monitors of Sect.~\ref{sec:synthesis}, in contrast, evaluate a formula on the observed prefix without looking ahead. For a monitor $m$ that is correct for $p$, the theorem reads: $p$ is extendable if and only if, after every run of $m$ without alarm, there is a valuation for which $m$ raises no alarm. Extendability of $a \land \bigwedge_i g_i$ is thereby reduced to a reachability question on the monitors synthesised in Sect.~\ref{sec:synthesis}, running side by side (Lemma~\ref{lem:central}). \todo{Decide whether to automate this check for pattern instances or to leave it as future work.}
+In the terminology of Kupferman and Vardi~\cite{KupfermanVardi2001}, a dead end is a bad prefix of $\always{p}$---a prefix none of whose continuations satisfies $\always{p}$---that $p$ itself does not reject. Extendability thus demands that $p$ rejects every bad prefix as early as possible, a property that monitors for temporal logics over infinite words establish by construction~\cite{BauerLeuckerSchallhart2011}, whereas the monitors of Sect.~\ref{sec:synthesis} evaluate a formula on the observed prefix without looking ahead. For a monitor $m$ that is correct for $p$, the theorem reads: $p$ is extendable if and only if, after every run of $m$ without alarm, there is a valuation for which $m$ raises no alarm. Extendability of $a \land \bigwedge_i g_i$ is thereby reduced to a reachability question on the monitors synthesised in Sect.~\ref{sec:synthesis}, running side by side (Lemma~\ref{lem:central}). \todo{Decide whether to automate this check for pattern instances or to leave it as future work.}
 
 \paragraph{Blame.}
 If a monitor raises an alarm, the separation of assumption and guarantee tells who is responsible. We say that a component $s_i$ satisfies its monitorable contract \emph{stagewise} if, for every behaviour $x$ of $s_i$ and every $t \in \nat$, $\upto{a_i}(\pre{x}{t})$ implies $g_i(\pre{x}{t})$; stagewise satisfaction implies satisfaction in the sense of Def.~\ref{def:satisfaction}.

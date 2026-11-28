@@ -18,7 +18,7 @@ The \emph{syntactic interface} of a system is a pair $\iface{I}{O}$ of disjoint 
   A system $\sys{s}$ with syntactic interface $\iface{I}{O}$ and semantic interface $f$ \emph{satisfies} the contract $C = \ctr{A}{G}$, written $\sys{s} \models C$, if $\forall x \in \chan{I}, y \in f(x)\colon A(x) \implies G(x, y)$.
 \end{definition}
 
-\noindent Hence, a contract corresponds to the interface assertion $A \implies G$; keeping the two parts apart later allows a violation to be attributed either to the system or to its environment (cf.\ Sect.~\ref{sec:compositional}).
+\noindent Hence, a contract corresponds to the interface assertion $A \implies G$; keeping both parts apart is what later allows a violation to be attributed either to the system or to its environment (cf.\ Sect.~\ref{sec:compositional}).
 
 \paragraph{Refinement and Composition.} Refinement relates the contracts of adjacent levels of the architecture, \eg, the contract of a system and the contracts of its components.
 
@@ -48,7 +48,7 @@ Composition generalises to contracts $C_i = \ctr{A_i}{G_i}$, $i \in \{1, \dots, 
 
 \noindent Both theorems are mechanised (cf.\ Sect.~\ref{sec:mechanisation}). Theorem~\ref{thm:composition} permits components to be developed, replaced, and---as we show in Sect.~\ref{sec:compositional}---monitored independently of each other. None of the definitions refers to a particular level of the architecture; they apply alike to systems of systems, systems, and components.
 
-\paragraph{Monitorable Contracts.} A runtime monitor observes a finite prefix of a channel history only. It can therefore establish only those violations that a finite prefix witnesses.
+\paragraph{Monitorable Contracts.} A runtime monitor observes a finite prefix of a channel history only. Consequently, it can establish violations of those properties whose violation is witnessed by a finite prefix.
 
 \begin{definition}[Monitorable Contract]\label{def:monitorable}
   A \emph{prefix predicate} $p$ over a set of channels $C$ is a decidable predicate on the finite prefixes of channel histories in $\chan{C}$. It induces the property $\always{p} = \{x \in \chan{C} \mid \forall t \in \nat\colon p(\pre{x}{t})\}$. A contract $\ctr{A}{G}$ for $\iface{I}{O}$ is \emph{monitorable} if $A = \always{a}$ and $G = \always{g}$ for prefix predicates $a$ over $I$ and $g$ over $I \cup O$.
