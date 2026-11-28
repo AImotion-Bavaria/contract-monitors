@@ -1,7 +1,7 @@
 \section{Mechanisation}\label{sec:mechanisation}
-% Budget: 1 page. Figures refer to the state of lean/ on 22 Nov 2026; update before submission.
+% Budget: 1 page. Figures refer to the state of lean/ on 28 Nov 2026 (1,957 lines including Main.lean); update before submission.
 
-The definitions and theorems of Sects.~\ref{sec:contracts}--\ref{sec:compositional} are formalised and proved in Lean~4~\cite{deMouraUllrich2021}. The development uses the core library only, comprises about 1,250 lines, and contains no unproved statement.
+The definitions and theorems of Sects.~\ref{sec:contracts}--\ref{sec:compositional} are formalised and proved in Lean~4~\cite{deMouraUllrich2021}. The development uses the core library only, comprises about 1,950 lines, and contains no unproved statement.
 
 \paragraph{Structure.}
 Table~\ref{tab:lean} relates the modules of the development to the paper. Contracts are formalised as pairs of predicates over infinite traces, monitorable contracts as pairs of decidable predicates over finite prefixes. Channels and syntactic interfaces are layered on top: a predicate \emph{observes} a set of channels if it is invariant under hiding all other channels, and a monitor is \emph{local} to a set of channels if it is fed with these channels only.
